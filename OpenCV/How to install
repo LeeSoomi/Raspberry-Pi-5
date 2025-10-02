@@ -1,0 +1,97 @@
+Raspberry Pi OS 64‑bit(북서리/Bookworm) 기준
+
+1) OpenCV 설치(전역, 권장)
+
+  sudo apt update && sudo apt -y full-upgrade
+  sudo apt -y install python3-opencv libgl1 gstreamer1.0-tools gstreamer1.0-libav \
+                      gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+  python3 - << 'PY'
+  import cv2; print("OpenCV:", cv2.__version__)
+  PY
+
+  
+  결과 예:
+  OpenCV version: 4.6.0
+
+----------------------
+
+2. 웹캠 연결 및 인식 확인
+  
+  USB 포트에 웹캠을 꽂고 아래 명령어
+  ls /dev/video*
+
+  # 보통 /dev/video0가 웹캠
+
+---------------
+
+3. OpenCV로 웹캠 화면 띄우기
+
+  # webcam_test.py
+  import cv2
+  cap = cv2.VideoCapture(0)  # USB 웹캠
+  if not cap.isOpened():
+      raise SystemExit("웹캠을 열 수 없습니다. /dev/video* 와 dmesg 확인")
+  
+  # 선택: 해상도 지정
+  cap.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
+  cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+  
+  while True:
+      ok, frame = cap.read()
+      if not ok: break
+      cv2.imshow("Webcam", frame)
+      if cv2.waitKey(1) & 0xFF == ord('q'):
+          break
+  cap.release(); cv2.destroyAllWindows()
+  
+  
+  실행:
+   python3 webcam_test.py
+------------------------
+
+3. 웹캠 해상도 설정
+
+  cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+  cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+  이렇게 하면 640x480 해상도로 강제 설정됩니다.
+  대부분의 USB 웹캠은 VGA(640x480), HD(1280x720)까지 지원
+
+  --------------------------------
+
+4. AI 추론(권장): TFLite를 가상환경에 설치
+TensorFlow 정식판보다 tflite‑runtime이 라즈베리파이에서 훨씬 가볍고 안정적
+
+  # 가상환경 만들기
+  sudo apt -y install python3-venv libopenblas-dev
+  python3 -m venv ~/ai-env
+  source ~/ai-env/bin/activate
+  
+  # 최신 pip + 런타임 설치
+  pip install --upgrade pip
+  pip install numpy tflite-runtime
+  
+  # 동작 확인
+  python - << 'PY'
+  import tflite_runtime.interpreter as t
+  print("TFLite OK")
+  PY
+
+ -------------------
+
+ 5. 확인
+
+ # 64비트 확인
+  uname -m            # aarch64 여야 함
+  
+  # OpenCV 전역 확인
+  python3 -c "import cv2; print(cv2.__version__)"
+  
+  # 웹캠 장치 확인
+  ls /dev/video*
+  
+  # TFLite 가상환경 확인
+  source ~/ai-env/bin/activate
+  python -c "import tflite_runtime.interpreter as t; print('TFLite OK')"
+
+  
+
