@@ -5,6 +5,8 @@ Raspberry Pi OS 64‑bit(북서리/Bookworm) 기준
   sudo apt update && sudo apt -y full-upgrade
   sudo apt -y install python3-opencv libgl1 gstreamer1.0-tools gstreamer1.0-libav \
                       gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+ 
+
   python3 - << 'PY'
   import cv2; print("OpenCV:", cv2.__version__)
   PY
