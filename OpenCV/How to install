@@ -34,14 +34,25 @@ https://downloads.raspberrypi.com/raspios_full_arm64/images/raspios_full_arm64-2
 
 ------------------------------------------
 
-2단계. 기본 설정
-  sudo apt update
-  sudo apt full-upgrade -y
-  sudo reboot
+2. 업데이트 설정
 
-  필요시 SSH 활성화:
-  sudo raspi-config
-  → Interface Options → SSH → Enable
+  기본 업데이트시 오류가 날 수있음    
+     # ① 충돌 가능성 있는 패키지 먼저 제거
+    sudo apt remove --purge arandr system-config-printer xinput rasputin raspi-utils -y
+    
+  # ② 불필요한 의존성도 정리
+    sudo apt autoremove -y
+  
+  # ③ 패키지 목록 최신화
+    sudo apt update
+  
+  # ④ 시스템 패키지 업그레이드
+    sudo apt upgrade -y 
+    sudo reboot
+
+    필요시 SSH 활성화:
+      sudo raspi-config
+      → Interface Options → SSH → Enable
 
 -----------------------------------------
 
