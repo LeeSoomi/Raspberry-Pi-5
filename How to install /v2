@@ -1,0 +1,123 @@
+시스템 업데이트2-1. 터미널 열기
+bash# 바탕화면 상단 메뉴바
+# 터미널 아이콘 클릭 또는
+# 메뉴 → Accessories → Terminal2-2. 시스템 업데이트 실행
+bashsudo apt update
+# 패키지 목록 업데이트 (30초-1분)
+
+sudo apt upgrade -y
+# 시스템 업그레이드 (5-15분, 다운로드 속도에 따라)
+# 중간에 질문 나오면 기본값(Enter) 선택⏱️ 대기 시간: 약 10-20분3단계: 한글 설치3-1. 한글 폰트 설치
+bashsudo apt install fonts-nanum fonts-nanum-coding fonts-nanum-extra -y
+설명: 나눔고딕, 나눔명조, 나눔코딩 폰트 설치 (약 1분)3-2. 한글 입력기 설치 (ibus 방식)
+bashsudo apt install ibus ibus-hangul -y
+설명: ibus 입력기 프레임워크와 한글 엔진 설치 (약 1분)3-3. ibus를 기본 입력기로 설정
+bashim-config -n ibus
+설명: 입력기 설정 도구 실행
+
+창이 뜨면 "OK" 클릭
+"Yes" 클릭
+"ibus" 선택 → "OK"
+3-4. 재부팅
+bashsudo reboot
+⏱️ 재부팅 시간: 약 30초-1분3-5. 재부팅 후 ibus 설정
+bash# 재부팅 후 터미널에서
+ibus-setup설정 과정:
+1. IBus Preferences 창이 열림
+2. "Input Method" 탭 클릭
+3. "Add" 버튼 클릭
+4. 검색창에 "Korean" 입력
+5. "Korean - Hangul" 선택 → "Add" 클릭
+6. 창 닫기3-6. 한영 전환 테스트
+bash# 아무 텍스트 에디터 열기 (예: Text Editor)
+# 한영 전환 키: Shift + Space
+# 또는: Super(Windows키) + Space✅ 체크포인트: 한글 입력이 되는지 확인4단계: VS Code 설치4-1. VS Code ARM64 다운로드
+bashcd ~/Downloads
+
+wget https://code.visualstudio.com/sha/download?build=stable&os=linux-arm64 -O code.deb설명: VS Code ARM64 버전 다운로드 (약 100MB, 1-3분)4-2. VS Code 설치
+bashsudo apt install ./code.deb -y
+설명: 다운로드한 deb 패키지 설치 (약 1분)4-3. 설치 확인
+bashcode --version
+예상 출력:
+1.xx.x
+xxxxxxxx
+arm644-4. VS Code 실행
+bash# 방법 1: 터미널에서
+code
+
+# 방법 2: 메뉴에서
+# 메뉴 → Programming → Visual Studio Code4-5. VS Code 한글 설정 (선택사항)
+1. VS Code 실행
+2. 왼쪽 Extensions 아이콘 클릭 (네모 4개)
+3. 검색: "Korean Language Pack"
+4. "Korean Language Pack for Visual Studio Code" 설치
+5. "Change Language and Restart" 클릭✅ 체크포인트: VS Code가 정상 실행되는지 확인5단계: OpenCV 설치 (시스템 전역)5-1. OpenCV 및 의존성 설치
+bashsudo apt install -y python3-opencv libopencv-dev
+설명:
+
+python3-opencv: Python용 OpenCV
+libopencv-dev: C++ 개발용 라이브러리
+(약 2-3분)
+5-2. 추가 이미지 처리 라이브러리
+bashsudo apt install -y python3-pil python3-numpy
+설명: Pillow(이미지 처리), NumPy(수치 계산) 설치 (약 1분)5-3. OpenCV 설치 확인
+bashpython3 -c "import cv2; print('OpenCV version:', cv2.__version__)"예상 출력:
+OpenCV version: 4.6.0
+참고: Bookworm의 APT 버전은 4.6.0입니다 (충분히 안정적)5-4. NumPy 확인
+bashpython3 -c "import numpy as np; print('NumPy version:', np.__version__)"예상 출력:
+NumPy version: 1.24.x5-5. OpenCV 카메라 테스트 (선택사항, 카메라 연결 시)
+bash# test_camera.py 생성
+cat > ~/test_camera.py << 'EOF'
+import cv2
+
+# 카메라 열기
+cap = cv2.VideoCapture(0)
+
+if not cap.isOpened():
+    print("카메라를 열 수 없습니다")
+    exit()
+
+print("카메라 테스트 시작 (q를 눌러 종료)")
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    cv2.imshow('Camera Test', frame)
+    
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+EOF
+
+# 실행
+python3 ~/test_camera.py5-6. OpenCV 기본 테스트
+bash# 이미지 생성 테스트
+python3 << 'EOF'
+import cv2
+import numpy as np
+
+# 빈 이미지 생성
+img = np.zeros((400, 600, 3), dtype=np.uint8)
+
+# 도형 그리기
+cv2.rectangle(img, (50, 50), (550, 350), (0, 255, 0), 3)
+cv2.circle(img, (300, 200), 80, (255, 0, 0), -1)
+cv2.putText(img, "OpenCV Test", (180, 220), 
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
+print("OpenCV 테스트 이미지 생성 완료")
+print("창이 열립니다. 아무 키나 누르면 종료됩니다.")
+
+cv2.imshow("OpenCV Test", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+print("OpenCV 정상 작동!")
+EOF✅ 체크포인트:
+
+OpenCV 버전 출력 확인
+테스트 이미지 창이 열리는지 확인
