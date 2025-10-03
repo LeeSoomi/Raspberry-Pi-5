@@ -34,7 +34,7 @@ https://downloads.raspberrypi.com/raspios_full_arm64/images/raspios_full_arm64-2
 
 ------------------------------------------
 
-2. 업데이트 설정
+2단계. 업데이트 설정
 
   기본 업데이트시 오류가 날 수있음    
      # ① 충돌 가능성 있는 패키지 먼저 제거
