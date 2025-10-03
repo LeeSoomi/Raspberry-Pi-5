@@ -18,13 +18,18 @@
     
 ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
 
+https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2023-10-10/
+>> 2023-10-10-raspios-bookworm-arm64.img.xz 파일 다운로드
+( https://downloads.raspberrypi.com/raspios_arm64/images/raspios_arm64-2023-10-10/2023-10-10-raspios-bookworm-arm64.img.xz  >
+
+
 1단계. OS 설치
   Raspberry Pi Imager 다운로드: https://www.raspberrypi.com/software
   SD 카드: 64GB 이상 (U3, A2 등급 추천)
 
   Raspberry Pi Imager 실행
-    OS 선택 →
-    ▶ Raspberry Pi OS (64-bit) → "Bookworm with desktop" 선택
+    OS 선택 custom 선택
+    다운받아 놓은 2023-10-10-raspios-bookworm-arm64.img.xz
     저장 장치 선택 → SD 카드
 
 ------------------------------------------
