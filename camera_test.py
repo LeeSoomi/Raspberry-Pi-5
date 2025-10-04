@@ -1,3 +1,11 @@
+# 웹캠이 인식되었는지 확인
+#     ls /dev/video*
+
+# libcamera 기반 테스트
+#     sudo apt install libcamera-apps
+#     libcamera-hello -–list-cameras
+
+
 import cv2
 
 # 카메라 열기
