@@ -20,13 +20,13 @@ Raspberry Pi에 SD카드 삽입 이후 사용자, 비번,  WiFi 설정
 
 1. 시스템 업데이트 실행
     sudo apt update      # 패키지 목록 업데이트
-    sudo apt upgrade –y  #시스템 업그레이드 
+    sudo apt upgrade  #시스템 업그레이드 
                           #중간에 질문 나오면 기본값(Enter) 선택
 
 2. 한글 설치
     sudo apt install -y fonts-nanum fonts-nanum-coding fonts-nanum-extra 
       # 나눔고딕, 나눔명조, 나눔코딩 폰트 설치
-    sudo apt install ibus ibus-hangul –y 
+    sudo apt install -y ibus ibus-hangul
       # 한글입력기 ibus방식으로 프레임워크와 한글엔진 설칠
     im-config –n ibus 
       # ibus를 기본입력기로 설정
