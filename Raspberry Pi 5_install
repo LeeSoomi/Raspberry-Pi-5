@@ -24,7 +24,7 @@ Raspberry Pi에 SD카드 삽입 이후 사용자, 비번,  WiFi 설정
                           #중간에 질문 나오면 기본값(Enter) 선택
 
 2. 한글 설치
-    sudo apt install fonts-nanum fonts-nanum-coding fonts-nanum-extra -y
+    sudo apt install -y fonts-nanum fonts-nanum-coding fonts-nanum-extra 
       # 나눔고딕, 나눔명조, 나눔코딩 폰트 설치
     sudo apt install ibus ibus-hangul –y 
       # 한글입력기 ibus방식으로 프레임워크와 한글엔진 설칠
