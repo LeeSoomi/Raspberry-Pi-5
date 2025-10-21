@@ -33,8 +33,10 @@ Raspberry Pi에 SD카드 삽입 이후 사용자, 비번,  WiFi 설정
       # ibus 설정 도구 실행 후 나오는 창 OK, YES, > ibus 선택 OK
     sudo reboot  
       #재부팅
-    IBus Preferences > Input Method > Add > Korean – Hangul 추가
-      # ibus설정 eng없으면 추가
+     IBus Preferences 창이 열림 > "Input Method" 탭 클릭 > "Add" 버튼 클릭 > 검색창에 "Korean" 입력
+     > "Korean - Hangul" 선택 > "Add" 클릭
+6. 창 닫기
+      # ibus설정에 eng없으면 추가
 
 
 3. VS Code설치
@@ -52,7 +54,6 @@ Raspberry Pi에 SD카드 삽입 이후 사용자, 비번,  WiFi 설정
     VS Code 설정
         Extensions > python install 
               Korean Language Pack 검색 > Korean Language Pack for Visual Studio Code install
-
 
 
 4. OpenCV 설치
