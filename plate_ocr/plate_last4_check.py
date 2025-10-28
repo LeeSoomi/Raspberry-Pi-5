@@ -186,8 +186,8 @@ def main():
         return
 
     # 해상도 (권장)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH,  1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     print("[INFO] ESC 종료. 인식된 '마지막 4자리'와 화이트리스트 대조 결과를 출력합니다.")
     last_print = {}  # { '3456': timestamp }
