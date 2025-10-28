@@ -1,6 +1,7 @@
 # sudo apt-get update
 # sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
-# sudo apt install -y python3-opencv python3-pandas python3-numpy python3-pytesseract
+# python3 -m pip install opencv-python pytesseract pandas numpy --break-system-packages
+
 # >> 확인 
 # python3 -m pip show opencv-python
 # python3 -m pip show pytesseract
