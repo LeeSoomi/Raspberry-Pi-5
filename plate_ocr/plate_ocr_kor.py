@@ -10,6 +10,15 @@ import cv2
 import numpy as np
 import re
 import time
+# ===== CSV 로드 & 정규화 =====
+import pandas as pd, re
+CSV_PATH = "plates.csv"   # CSV 파일명(같은 폴더)
+
+def normalize_plate(s: str) -> str:
+    return re.sub(r"\s+", "", str(s).strip())
+
+csv_df = pd.read_csv(CSV_PATH)                 # 'plate' 컬럼 가정
+ALLOW_PLATES = set(normalize_plate(x) for x in csv_df["plate"].astype(str).tolist())
 
 # ---- OCR(테서랙트) 사용 ----
 # pytesseract는 파이썬 바인딩입니다. 시스템에 tesseract-ocr, tesseract-ocr-kor가 설치되어 있어야 합니다.
@@ -155,38 +164,44 @@ def main():
         for q in quads:
             plate_roi = warp_plate(frame, q, TARGET_W, TARGET_H)
             plates = ocr_plate(plate_roi)
-
+        
             if SHOW_DEBUG:
                 x,y,w,h = cv2.boundingRect(q)
                 cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,255), 2)
-
+        
             for text in plates:
+                norm = normalize_plate(text)                   # ← 공백 제거 등 정규화
+                in_csv = norm in ALLOW_PLATES                  # ← CSV 대조
                 now = time.time()
-                if text not in last_print or (now - last_print[text]) > SUPPRESS_SEC:
-                    print(f"[PLATE] {text}")
-                    last_print[text] = now
+                if norm not in last_print or (now - last_print[norm]) > SUPPRESS_SEC:
+                    print(f"[CHECK] {norm} -> {'등록됨' if in_csv else '미등록'}")
+                    last_print[norm] = now
+        
                 detected_any = True
                 if SHOW_DEBUG:
-                    # 번호판 영역 위에 텍스트 오버레이
+                    color = (0,255,0) if in_csv else (0,0,255)
                     cx, cy = int(q[:,0,0].mean()), int(q[:,0,1].mean())
-                    cv2.putText(frame, text, (cx-80, cy-10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2, cv2.LINE_AA)
+                    cv2.putText(frame, norm, (cx-80, cy-10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2, cv2.LINE_AA)
 
         # 후보가 전혀 없을 때(원경/각도 불량 등) 전체 프레임 OCR로 보조 시도
-        if not detected_any:
-            if TESS_AVAILABLE:
-                gray_small = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                for cfg in TESS_CONFIGS:
-                    raw = pytesseract.image_to_string(gray_small, config=cfg)
-                    plates = extract_plates_from_text(raw)
-                    for t in plates:
-                        now = time.time()
-                        if t not in last_print or (now - last_print[t]) > SUPPRESS_SEC:
-                            print(f"[FULL] {t}")
-                            last_print[t] = now
-                        if SHOW_DEBUG:
-                            cv2.putText(frame, t, (30,60),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,0,0), 2, cv2.LINE_AA)
+        if not detected_any and TESS_AVAILABLE:
+            gray_small = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            for cfg in TESS_CONFIGS:
+                raw = pytesseract.image_to_string(gray_small, config=cfg)
+                plates = extract_plates_from_text(raw)
+                for t in plates:
+                    norm = normalize_plate(t)
+                    in_csv = norm in ALLOW_PLATES
+                    now = time.time()
+                    if norm not in last_print or (now - last_print[norm]) > SUPPRESS_SEC:
+                        print(f"[CHECK(FULL)] {norm} -> {'등록됨' if in_csv else '미등록'}")
+                        last_print[norm] = now
+                    if SHOW_DEBUG:
+                        color = (0,255,0) if in_csv else (0,0,255)
+                        cv2.putText(frame, norm, (30,60),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2, cv2.LINE_AA)
+
 
         if SHOW_DEBUG:
             cv2.imshow("Korean Plate OCR (OpenCV + Tesseract)", frame)
