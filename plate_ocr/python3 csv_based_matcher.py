@@ -1,6 +1,9 @@
 # sudo apt-get update
 # sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
-# pip3 install pytesseract opencv-python numpy
+# sudo apt install -y python3-opencv python3-pandas python3-numpy python3-pytesseract
+# >> 확인 
+# python3 -m pip show opencv-python
+# python3 -m pip show pytesseract
 
 # 카메라 권한 필요
 # sudo usermod -a -G video $USER
