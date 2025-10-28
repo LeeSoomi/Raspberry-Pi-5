@@ -1,24 +1,33 @@
-# 시스템 패키지 설치
-# sudo apt update && sudo apt -y upgrade
+# sudo apt-get update
+# sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
+# python3 -m pip install opencv-python pytesseract pandas numpy --break-system-packages
 
-# # OpenCV 의존성 (이미 OpenCV 설치되어 있다면 중복 무관)
-# sudo apt -y install libjpeg-dev libatlas-base-dev libqtgui4 libqt4-test
+# >> 확인 
+# python3 -m pip show opencv-python
+# python3 -m pip show pytesseract
 
-# # Tesseract OCR (이미지 → 텍스트 인식)
-# sudo apt -y install tesseract-ocr tesseract-ocr-kor tesseract-ocr-osd
+# 카메라 권한 필요
+# sudo usermod -a -G video $USER
 
-# 파이썬 패키지 설치
-# python3 -m pip install --upgrade pip
-# python3 -m pip install opencv-python pytesseract pandas numpy
+# 설치확인
+# python3 -c "import cv2, pytesseract, numpy; print('OK')"
 
-      
-#       라즈베리파이5는 ARM64 환경이라 opencv-python이 자동 빌드되지 않을 때는
-#       opencv-python-headless로 대체 가능합니다:
-      
-#       python3 -m pip install opencv-python-headless
+# # 1. Tesseract OCR 설치 (한글 포함)
+# sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
+
+# # 2. Python 연동 패키지 설치
+# pip3 install pytesseract numpy
+
+# 설치 확인:
+# bash# Tesseract 설치 확인
+# tesseract --version
+
+# # Python에서 확인
+# python3 -c "import pytesseract; print('pytesseract OK')"
+
+
 
 #  plate_last4_check.py
-
 import cv2
 import numpy as np
 import pandas as pd
