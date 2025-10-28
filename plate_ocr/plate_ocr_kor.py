@@ -1,3 +1,11 @@
+# plate
+# 12가3456
+# 123나4567
+# 서울31바1234
+
+
+
+
 import cv2
 import numpy as np
 import re
