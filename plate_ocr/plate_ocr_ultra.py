@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#  테스트완료
+
 import cv2
 import pytesseract
 import pandas as pd
