@@ -1,3 +1,4 @@
+# 상세 주석 내용 추가
 
 import cv2                 # OpenCV: 카메라 프레임 획득/영상 처리/화면 출력
 import pytesseract         # Tesseract OCR 파이썬 바인딩: 이미지 → 텍스트 인식
