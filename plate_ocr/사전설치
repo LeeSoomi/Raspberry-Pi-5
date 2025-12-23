@@ -1,0 +1,26 @@
+sudo apt-get update
+sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
+python3 -m pip install opencv-python pytesseract pandas numpy --break-system-packages
+
+>> 확인 
+python3 -m pip show opencv-python
+python3 -m pip show pytesseract
+
+카메라 권한 필요
+sudo usermod -a -G video $USER
+
+설치확인
+python3 -c "import cv2, pytesseract, numpy; print('OK')"
+
+# 1. Tesseract OCR 설치 (한글 포함)
+sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
+
+# 2. Python 연동 패키지 설치
+pip3 install pytesseract numpy
+
+설치 확인:
+bash# Tesseract 설치 확인
+tesseract --version
+
+# Python에서 확인
+python3 -c "import pytesseract; print('pytesseract OK')"
