@@ -10,18 +10,6 @@
 #   152가3018
 #   12나3456
 
-step3_csv_compare.py의 완전한 수정본입니다:
-python# 3단계 CSV 데이터와 카메라 OCR 결과 비교
-
-# 목표
-#   1. OCR은 "입력 데이터"
-#   2. CSV는 "기준 데이터"
-#   3. 판단은 코드가 한다는 개념 정립
-
-# CSV 예시 (plates.csv)
-#   plate
-#   152가3018
-#   12나3456
 
 import cv2
 import pytesseract
