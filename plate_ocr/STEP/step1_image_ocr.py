@@ -36,9 +36,16 @@ for file in os.listdir(IMAGE_DIR):
         continue
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    cv2.imshow("Original", img)
+    cv2.imshow("Grayscale", gray)
+    
     text = pytesseract.image_to_string(gray, config=OCR_KOR)
 
     print("=" * 40)
     print(f"[파일명] {file}")
     print("[OCR 결과]")
     print(text)
+    print("\n아무 키나 누르면 다음 이미지로 넘어갑니다...")
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
