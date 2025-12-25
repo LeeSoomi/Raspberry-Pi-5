@@ -1,6 +1,15 @@
-# 1단계 핵심 개념
-# cv2.imread()
-# pytesseract.image_to_string()
+# 1단계 같은 폴더에 있는 이미지에서 텍스트 검출
+
+# 목표
+# 1. OCR이 “카메라가 없어도” 동작함을 이해
+# 2. 이미지 → 텍스트 변환의 기본 구조 이해
+# 3. 실패해도 부담 없는 단계
+
+# 핵심 개념
+#     cv2.imread()
+#     pytesseract.image_to_string()
+#     OCR 결과는 완벽하지 않다
+
 
 import cv2
 import pytesseract
