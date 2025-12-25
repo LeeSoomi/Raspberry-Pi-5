@@ -10,6 +10,13 @@
 #     pytesseract.image_to_string()
 #     OCR 결과는 완벽하지 않다
 
+# 폴더구조
+# project/
+#  ├─ images/
+#  │   ├─ car1.jpg
+#  │   ├─ car2.jpg
+#  ├─ step1_image_ocr.py
+
 
 import cv2
 import pytesseract
