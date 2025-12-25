@@ -10,13 +10,34 @@
 #   152가3018
 #   12나3456
 
+step3_csv_compare.py의 완전한 수정본입니다:
+python# 3단계 CSV 데이터와 카메라 OCR 결과 비교
+
+# 목표
+#   1. OCR은 "입력 데이터"
+#   2. CSV는 "기준 데이터"
+#   3. 판단은 코드가 한다는 개념 정립
+
+# CSV 예시 (plates.csv)
+#   plate
+#   152가3018
+#   12나3456
+
 import cv2
 import pytesseract
 import pandas as pd
 import re
+import os
 
 OCR_KOR = "--oem 3 --psm 6 -l kor+eng"
 CSV_PATH = "plates.csv"
+
+# CSV 파일 존재 확인
+if not os.path.exists(CSV_PATH):
+    print(f"경고: {CSV_PATH} 파일이 없습니다!")
+    print("plates.csv 파일을 생성해주세요.")
+    print("예시:\nplate\n152가3018\n12나3456")
+    exit()
 
 # CSV 로드
 df = pd.read_csv(CSV_PATH)
@@ -34,6 +55,7 @@ cap.set(3,1280)
 cap.set(4,720)
 
 print("ESC 종료")
+print(f"등록된 차량 수: {len(WHITELIST)}대")
 
 while True:
     ret, frame = cap.read()
