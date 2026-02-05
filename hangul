@@ -18,6 +18,10 @@ sudo apt autoremove -y
 sudo apt update
 sudo apt install fcitx5 fcitx5-hangul fcitx5-frontend-gtk3 fcitx5-frontend-qt5 im-config -y
 
+폰트 추가
+sudo apt install fonts-nanum -y
+
+
 ## 2단계: 기본 입력기 설정 (im-config)
 시스템이 부팅될 때 fcitx5를 기본으로 불러오도록 설정합니다.
 
