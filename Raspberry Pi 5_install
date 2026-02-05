@@ -70,17 +70,13 @@ Raspberry Pi에 SD카드 삽입 이후 사용자, 비번,  WiFi 설정
       
       
       OpenCV 설치 확인
-      	python3
-      	import cv2
-      	print('OpenCV version:', cv2.__version__)  
+      	python3 -c "import cv2; print('OpenCV version:', cv2.__version__)"
        
              # 출력 : OpenCV version: 4.6.0
              # Bookworm의 APT 버전은 4.6.0
       
       NumPy 확인
-      	python3
-      	import numpy as np
-      	print('NumPy version:', np.__version__)
+      	python3 -c "import numpy as np; print('NumPy version:', np.__version__)"
       
              # 출력 : NumPy version: 1.24.x
       
