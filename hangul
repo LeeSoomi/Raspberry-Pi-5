@@ -1,0 +1,73 @@
+## 주요 원인 및 해결 방법
+입력기 호환성 문제 (iBus → Fcitx5 권장)
+라즈베리파이 OS의 기본 입력기인 iBus는 최신 환경에서 특정 앱과 호환성이 떨어질 때가 많습니다. 
+  최근에는 더 가볍고 Wayland 호환성이 좋은 fcitx5를 사용하는 것이 해결책이 되는 경우가 많습니다.
+
+  ## 1단계: Fcitx5 및 관련 패키지 설치
+터미널을 열고 아래 명령어를 한 줄씩 실행하세요. 
+  (이미 실행하셨더라도 다시 한번 확인 차원에서 입력하셔도 무방합니다.)
+
+sudo apt update
+sudo apt install fcitx5 fcitx5-hangul fcitx5-frontend-gtk3 fcitx5-frontend-qt5 im-config -y
+
+## 2단계: 기본 입력기 설정 (im-config)
+시스템이 부팅될 때 fcitx5를 기본으로 불러오도록 설정합니다.
+
+im-config -n fcitx5
+참고: 실행 후 별다른 메시지가 없으면 정상적으로 설정된 것입니다.
+
+## 3단계: 환경 변수 등록 (중요)
+크롬과 VS Code가 Fcitx5를 제대로 인식하게 하려면 이 과정이 필수입니다.
+
+터미널에서 설정 파일을 엽니다.
+nano ~/.profile
+
+  파일의 맨 아래에 다음 내용을 복사해서 붙여넣습니다.
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export DefaultIMModule=fcitx
+
+Ctrl + O (저장) -> Enter -> Ctrl + X (종료)를 눌러 빠져나옵니다.
+
+## 4단계: 시스템 재부팅
+설정값이 시스템에 반영되려면 재부팅이 반드시 필요합니다.  
+sudo reboot
+
+## 5단계: 한글 입력기 추가 (재부팅 후 필수!)
+재부팅 후 오른쪽 상단 트레이 아이콘에 키보드 모양이 생깁니다. 하지만 아직 '한글' 팩이 추가되지 않았을 수 있습니다.
+키보드 아이콘 우클릭 -> 설정(Configure) 클릭.
+왼쪽 하단의 [+] 버튼 클릭.
+'Only Show Current Language' 체크를 해제합니다.
+검색창에 Hangul을 입력하여 추가합니다.
+Ctrl + Space 또는 한/영 키를 눌러 한글이 써지는지 확인합니다.
+
+## 6단계: 크롬 & VS Code 전용 추가 설정
+만약 위 단계를 마쳤는데도 두 앱에서만 안 된다면, 아래 설정을 딱 하나씩만 더 해주세요.
+크롬: 주소창에 chrome://flags 입력 -> Wayland text-input-v3를 찾아 Enabled로 변경.
+VS Code: 설정(Ctrl + ,) -> Title Bar Style을 검색해 native로 변경.  
+
+
+
+키링 잠금
+## 1단계: 암호 관리 프로그램 설치
+터미널(Terminal) 앱을 열고 아래 명령어를 입력하여 설치해 주세요.
+
+sudo apt update
+sudo apt install seahorse -y
+
+  ## 2단계: 앱 실행 시 비번 요청 끄기
+설치가 완료되면 다시 Accessories 메뉴를 확인해 보세요. Passwords and Keys가 생겼을 겁니다.
+
+Passwords and Keys 프로그램을 실행합니다.
+왼쪽 목록에서 Login (또는 Default) 항목을 마우스 우클릭합니다.
+Change Password를 누릅니다.
+기존 비번: 현재 쓰고 계신 라즈베리파이 비밀번호를 입력합니다.
+새 비번: 아무것도 입력하지 말고 빈칸인 상태로 [Continue] 버튼을 누릅니다.
+"비암호화 저장" 관련 경고가 뜨면 한 번 더 **[Continue]**를 눌러주세요.
+이제 크롬이나 VS Code를 켤 때 더 이상 비밀번호를 묻지 않을 거예요.  
+
+
+
+
+  
