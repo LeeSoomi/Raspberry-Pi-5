@@ -5,6 +5,8 @@
 # bashsudo apt install python3-rpi.gpio
 # # 또는
 # sudo apt install python3-lgpio python3-rpi-lgpio   
+
+
 from picamera2 import Picamera2
 import cv2
 import motor_module as motor
@@ -17,10 +19,10 @@ GPIO.setmode(GPIO.BCM)
 Frame_Width  = 640
 Frame_Height = 480
 
-# 카메라 초기화 - Picamera2로 변경
+# 카메라 초기화 - BGR888로 직접 설정
 picam2 = Picamera2()
 config = picam2.create_preview_configuration(
-    main={"size": (Frame_Width, Frame_Height), "format": "RGB888"}
+    main={"size": (Frame_Width, Frame_Height), "format": "BGR888"}  # RGB888 → BGR888로 변경
 )
 picam2.configure(config)
 picam2.start()
@@ -28,9 +30,9 @@ time.sleep(1)
 
 try:
     while True:
-        # 프레임 읽기 - Picamera2 방식으로 변경
+        # 프레임 읽기 - 변환 없이 바로 사용
         frame = picam2.capture_array()
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # cv2.cvtColor 줄 삭제! BGR로 직접 출력되므로 변환 불필요
         
         frame = cv2.GaussianBlur(frame, (11, 11),1)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -38,32 +40,19 @@ try:
         upper_red=cv2.inRange(hsv,(170,100,100),(180,255,255))
         mask=cv2.addWeighted(lower_red,1.0,upper_red,1.0,0.0)
         
-        mask = cv2.erode(mask, None, iterations=2) #Do erode if needed
-        #mask = cv2.dilate(mask, None, iterations=2) # Do dilate if needed
-        # Find the contours
-        #_, contours, _= cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        mask = cv2.erode(mask, None, iterations=2)
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
         center = None
         if len(contours) > 0:
-            c = max(contours, key=cv2.contourArea) # Find the max length of contours
-            ((x, y), radius) = cv2.minEnclosingCircle(c) # Find the x, y, radius of given contours
-            M = cv2.moments(c) # Find the moments
+            c = max(contours, key=cv2.contourArea)
+            ((x, y), radius) = cv2.minEnclosingCircle(c)
+            M = cv2.moments(c)
 
             try:
-                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])) # mass center
-                cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2) # process every frame
+                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
                 cv2.circle(frame, center, 5, (0, 0, 255), -1)
         
-                # Forward, backward, Turn rules
-                # Size of the recognized object           
-                """
-                if radius < 25 and radius > 5 :
-                    if center[0] > Frame_Width/2 + 55 :
-                        motor.turnRight()
-                    elif center[0] < Frame_Width/2 -55 : #turnLeft_Area Set
-                        motor.turnLeft()
-                    else:
-                        print(radius) """
                 if  radius > 5 :
                     motor.forward_f()
                     if center[0] > Frame_Width/2 + 55 :
@@ -71,20 +60,18 @@ try:
                     elif center[0] < Frame_Width/2 -55 :
                         motor.turnLeft()
                     else:
-                        motor.forward_f() #fast Run
-                    #elif radius > 65:
-                    #    motor.Reverse()
+                        motor.forward_f()
                 else:
                     motor.brake()
             except:
                 pass
         else:
             motor.stop()
-        cv2.imshow("Frame", frame)  # if you don't need to display and the car will get faster
+        cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
-finally: #except KeyboardInterrupt:
+finally:
     motor.cleanup()
-    picam2.stop()  # camera.release() -> picam2.stop()으로 변경
+    picam2.stop()
     cv2.destroyAllWindows()
