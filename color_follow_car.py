@@ -19,21 +19,28 @@ GPIO.setmode(GPIO.BCM)
 Frame_Width  = 640
 Frame_Height = 480
 
+# Picamera2 초기화
 picam2 = Picamera2()
-config = picam2.create_preview_configuration(
-    main={"size": (Frame_Width, Frame_Height), "format": "RGB888"}
+
+# preview configuration 대신 video configuration 사용
+config = picam2.create_video_configuration(
+    main={"size": (Frame_Width, Frame_Height), "format": "XRGB8888"},
+    controls={"FrameRate": 30}
 )
 picam2.configure(config)
 picam2.start()
-time.sleep(1)
+time.sleep(2)
 
 try:
     while True:
+        # 프레임 캡처
         frame = picam2.capture_array()
-        # RGB 그대로 사용
+        
+        # XRGB8888을 BGR로 변환
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
         
         frame = cv2.GaussianBlur(frame, (11, 11), 1)
-        hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)  # BGR이 아닌 RGB to HSV
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         lower_red = cv2.inRange(hsv, (0, 100, 100), (5, 255, 255))
         upper_red = cv2.inRange(hsv, (170, 100, 100), (180, 255, 255))
         mask = cv2.addWeighted(lower_red, 1.0, upper_red, 1.0, 0.0)
@@ -49,8 +56,8 @@ try:
 
             try:
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                cv2.circle(frame, (int(x), int(y)), int(radius), (255, 255, 0), 2)  # RGB 순서
-                cv2.circle(frame, center, 5, (255, 0, 0), -1)  # RGB 순서
+                cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+                cv2.circle(frame, center, 5, (0, 0, 255), -1)
         
                 if radius > 5:
                     motor.forward_f()
@@ -67,9 +74,7 @@ try:
         else:
             motor.stop()
             
-        # RGB를 BGR로 변환해서 표시
-        frame_display = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        cv2.imshow("Frame", frame_display)
+        cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
