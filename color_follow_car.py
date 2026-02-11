@@ -1,3 +1,13 @@
+# 라즈베리파이 5에서 GPIO를 사용하려면 RPi.GPIO 또는 최신 lgpio 라이브러리가 설치되어 있어야 합니다. 
+# 최신 Raspberry Pi OS에는 기본적으로 포함되어 있다.
+
+# 혹시 GPIO 관련 에러가 발생하면:
+# bashsudo apt install python3-rpi.gpio
+# # 또는
+# sudo apt install python3-lgpio python3-rpi-lgpio   
+
+
+
 from picamera2 import Picamera2
 import cv2
 import motor_module as motor
