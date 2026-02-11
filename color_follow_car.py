@@ -19,10 +19,9 @@ GPIO.setmode(GPIO.BCM)
 Frame_Width  = 640
 Frame_Height = 480
 
-# 카메라 초기화 - BGR888로 직접 설정
 picam2 = Picamera2()
 config = picam2.create_preview_configuration(
-    main={"size": (Frame_Width, Frame_Height), "format": "BGR888"}  # RGB888 → BGR888로 변경
+    main={"size": (Frame_Width, Frame_Height), "format": "RGB888"}
 )
 picam2.configure(config)
 picam2.start()
@@ -30,19 +29,19 @@ time.sleep(1)
 
 try:
     while True:
-        # 프레임 읽기 - 변환 없이 바로 사용
         frame = picam2.capture_array()
-        # cv2.cvtColor 줄 삭제! BGR로 직접 출력되므로 변환 불필요
+        # RGB 그대로 사용
         
-        frame = cv2.GaussianBlur(frame, (11, 11),1)
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        lower_red=cv2.inRange(hsv,(0,100,100),(5,255,255))
-        upper_red=cv2.inRange(hsv,(170,100,100),(180,255,255))
-        mask=cv2.addWeighted(lower_red,1.0,upper_red,1.0,0.0)
+        frame = cv2.GaussianBlur(frame, (11, 11), 1)
+        hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)  # BGR이 아닌 RGB to HSV
+        lower_red = cv2.inRange(hsv, (0, 100, 100), (5, 255, 255))
+        upper_red = cv2.inRange(hsv, (170, 100, 100), (180, 255, 255))
+        mask = cv2.addWeighted(lower_red, 1.0, upper_red, 1.0, 0.0)
         
         mask = cv2.erode(mask, None, iterations=2)
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
         center = None
+        
         if len(contours) > 0:
             c = max(contours, key=cv2.contourArea)
             ((x, y), radius) = cv2.minEnclosingCircle(c)
@@ -50,14 +49,14 @@ try:
 
             try:
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
-                cv2.circle(frame, center, 5, (0, 0, 255), -1)
+                cv2.circle(frame, (int(x), int(y)), int(radius), (255, 255, 0), 2)  # RGB 순서
+                cv2.circle(frame, center, 5, (255, 0, 0), -1)  # RGB 순서
         
-                if  radius > 5 :
+                if radius > 5:
                     motor.forward_f()
-                    if center[0] > Frame_Width/2 + 55 :
+                    if center[0] > Frame_Width/2 + 55:
                         motor.turnRight()
-                    elif center[0] < Frame_Width/2 -55 :
+                    elif center[0] < Frame_Width/2 - 55:
                         motor.turnLeft()
                     else:
                         motor.forward_f()
@@ -67,10 +66,14 @@ try:
                 pass
         else:
             motor.stop()
-        cv2.imshow("Frame", frame)
+            
+        # RGB를 BGR로 변환해서 표시
+        frame_display = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        cv2.imshow("Frame", frame_display)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
+            
 finally:
     motor.cleanup()
     picam2.stop()
