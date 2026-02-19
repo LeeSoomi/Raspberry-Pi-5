@@ -1,0 +1,63 @@
+1단계. 물리 연결
+  
+  RPLIDAR A1M8-R6 Development Kit이면 USB 변환 보드가 포함돼 있을 가능성이 커.
+  
+  구성 확인
+  라이다 본체
+  USB 어댑터 보드
+  USB 케이블
+  
+  연결 방법
+  라이다 → 어댑터 보드 연결
+  USB 케이블 → 라즈베리파이5 USB 포트
+  
+  전원은 USB로 공급돼.
+  연결하면 라이다가 회전하기 시작해야 정상이다.
+  
+  회전 안 하면
+  전원 문제 가능성 있음
+  다른 USB 포트에 꽂아보기
+
+
+2단계. 장치 인식 확인
+
+  터미널에서 실행
+  ls /dev/ttyUSB*
+
+  정상이라면
+    /dev/ttyUSB0
+
+  안 보이면
+  dmesg | grep tty
+  로 최근 연결 로그 확인.
+  여기까지 되면 하드웨어는 정상.
+
+
+3단계. Python 환경 준비
+  패키지 설치
+  sudo apt update
+  sudo apt install python3-pip
+  pip3 install rplidar
+  설치 완료 후 테스트 코드 작성.
+
+4단계. 기본 스캔 테스트
+  새 파일 생성  lidar_test.py
+
+from rplidar import RPLidar
+import time
+
+PORT_NAME = '/dev/ttyUSB0'
+lidar = RPLidar(PORT_NAME)
+
+try:
+    print("Scanning...")
+    for scan in lidar.iter_scans():
+        print(scan[:5])   # 너무 많으니 앞 5개만 출력
+except KeyboardInterrupt:
+    print("Stopping.")
+finally:
+    lidar.stop()
+    lidar.disconnect()
+
+터미널 실행 >> python3 lidar_test.py
+
