@@ -3,11 +3,11 @@ USB 케이블로 파이5 USB 포트에 꽂으면 시스템에서 /dev/ttyUSB0 �
 
 1. Python 직접 제어
 LiDAR가 USB로 붙어 있으면 Python 라이브러리를 이용
-
+*** 가상환경에서 
 sudo apt update
 sudo apt install python3-pip
-pip3 install rplidar
-
+sudo apt update
+sudo apt install -y python3-full python3-venv
 
 2. 간단한 코드로 스캔 데이터를 받아볼 수 있다.
 
