@@ -1,0 +1,171 @@
+라즈베리파이 5 + Ubuntu 24.04 LTS + ROS 2 Jazzy를 새로 깔 때 쓰는 전체 흐름입니다. (공식 권장 조합)
+
+1단계: Ubuntu 올리기 (PC에서)
+1) PC에 Raspberry Pi Imager 설치
+2)Imager 실행 → OS 선택 → Other general-purpose OS → Ubuntu → Ubuntu Server 24.04 LTS (64-bit)
+3) 저장 장치(SD/USB) 선택 → 톱니바퀴(설정)에서 가능하면 미리 설정
+  호스트명, 사용자/비밀번호
+  Wi‑Fi(유선만 쓰면 생략)
+  SSH 켜기
+4) 쓰기(Write) 완료 후 라즈베리파이에 꽂고 부팅
+
+첫 부팅 후 로그인해서 업데이트:
+sudo apt update
+sudo apt upgrade -y
+sudo reboot
+
+2단계: ROS 2 Jazzy 저장소 추가 (라즈베리파이에서)
+  Ubuntu 24.04 코드네임은 noble입니다.
+sudo apt update
+sudo apt install -y software-properties-common curl
+sudo add-apt-repository universes
+udo apt update
+
+  ROS 2 GPG 키와 apt 목록:
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+sudo apt update
+sudo apt upgrade -y
+
+3단계: ROS 2 패키지 설치
+  최소(로봇 본체만, GUI 없음) — 임베디드에 많이 씀:
+sudo apt install -y ros-jazzy-ros-base
+
+  데스크톱(도구·RViz 등 포함, 용량·부담 큼) — 개발 PC가 아니면 보통 안 깔고, 필요할 때만:
+sudo apt install -y ros-jazzy-desktop
+
+  개발용 도구:
+sudo apt install -y ros-dev-tools python3-colcon-common-extensions python3-rosdep
+
+
+4단계: 환경 적용
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+  의존성 초기화(워크스페이스 쓸 때):
+sudo rosdep initrosdep update
+
+
+5단계: 동작 확인
+source /opt/ros/jazzy/setup.bash
+ros2 run demo_nodes_cpp talker
+
+다른 터미널에서:
+source /opt/ros/jazzy/setup.bashr
+os2 run demo_nodes_cpp listener
+메시지가 오가면 설치 성공입니다.
+
+
+=========================
+
+라즈베리파이에서 바로 실행할 수 있는 워크스페이스 설정 스크립트를 워크스페이스에 만듭니다. 
+PC에서는 Pi에 직접 접속할 수 없어, 
+파일을 만들어 복사해 실행하시면 됩니다.
+
+1. Pi에 복사해 실행할 워크스페이스 자동 설정 스크립트를 생성
+<<<<<<<<<<<<<
+#!/usr/bin/env bash
+# Ubuntu 24.04 + ROS 2 Jazzy — 워크스페이스 생성 및 첫 빌드
+# 사용: bash ros2_jazzy_setup_workspace.sh
+set -euo pipefail
+
+ROS_DISTRO="${ROS_DISTRO:-jazzy}"
+WS_DIR="${WS_DIR:-$HOME/ros2_ws}"
+PKG_NAME="${PKG_NAME:-my_robot_pkg}"
+
+if [[ ! -f "/opt/ros/${ROS_DISTRO}/setup.bash" ]]; then
+  echo "오류: /opt/ros/${ROS_DISTRO}/setup.bash 가 없습니다."
+  echo "먼저 ROS 2 ${ROS_DISTRO} 패키지를 설치하세요 (예: sudo apt install ros-${ROS_DISTRO}-ros-base)."
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "/opt/ros/${ROS_DISTRO}/setup.bash"
+
+mkdir -p "${WS_DIR}/src"
+cd "${WS_DIR}/src"
+
+if [[ ! -d "${PKG_NAME}" ]]; then
+  ros2 pkg create --build-type ament_cmake "${PKG_NAME}" \
+    --dependencies rclcpp std_msgs sensor_msgs geometry_msgs
+  echo "패키지 생성: ${PKG_NAME}"
+else
+  echo "이미 존재: ${WS_DIR}/src/${PKG_NAME} — 건너뜀"
+fi
+
+cd "${WS_DIR}"
+
+if ! command -v rosdep &>/dev/null; then
+  echo "rosdep 없음 — 설치: sudo apt install -y python3-rosdep"
+  exit 1
+fi
+
+if [[ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]]; then
+  echo "rosdep 초기화가 필요합니다. 한 번만 실행:"
+  echo "  sudo rosdep init"
+  exit 1
+fi
+
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y || true
+
+colcon build --symlink-install
+
+# 워크스페이스 오버레이를 셸에 자동 적용
+MARK="# ROS 2 workspace overlay"
+BASHRC="${HOME}/.bashrc"
+if ! grep -qF "source ${WS_DIR}/install/setup.bash" "${BASHRC}" 2>/dev/null; then
+  {
+    echo ""
+    echo "${MARK}"
+    echo "source /opt/ros/${ROS_DISTRO}/setup.bash"
+    echo "source ${WS_DIR}/install/setup.bash"
+  } >> "${BASHRC}"
+  echo "~/.bashrc 에 워크스페이스 source 추가됨"
+else
+  echo "~/.bashrc 에 이미 워크스페이스 source 가 있습니다"
+fi
+
+# shellcheck source=/dev/null
+source "${WS_DIR}/install/setup.bash"
+
+echo ""
+echo "완료: ${WS_DIR}"
+echo "새 터미널을 열거나: source ${WS_DIR}/install/setup.bash"
+echo "빌드 다시: cd ${WS_DIR} && colcon build --symlink-install"
+>>>>>>>>>>>>>>>>
+d:\cursor\ros2_jazzy_setup_workspace.sh 파일을 만들어 두었습니다. 
+라즈베리파이(Ubuntu 24.04 + Jazzy 설치가 끝난 뒤) 에서 아래만 진행하면 됩니다.
+
+1) PC → Pi로 파일 보내기 (예: SCP)
+PowerShell에서 (사용자명·IP는 본인 것으로 바꿈):
+scp "d:\cursor\ros2_jazzy_setup_workspace.sh" ubuntu@192.168.x.x:~/
+(USB로 옮겨도 됩니다.)
+
+2) Pi에서 한 번만 (rosdep 초기화)
+아직 안 했다면:
+sudo rosdep init
+rosdep update
+
+3) 스크립트 실행
+bash ~/ros2_jazzy_setup_workspace.sh
+
+동작 요약:
+※ ~/ros2_ws 생성
+※ 패키지 my_robot_pkg 생성 (rclcpp, std_msgs, sensor_msgs, geometry_msgs 의존)
+※ rosdep install → colcon build --symlink-install
+※ ~/.bashrc에 /opt/ros/jazzy + 워크스페이스 install/setup.bash 로드 추가
+
+4) 확인
+source ~/ros2_ws/install/setup.bash
+ros2 pkg list | grep my_robot
+
+전제: 이미 이전에 안내한 대로 
+ros-jazzy-ros-base(또는 desktop)와 python3-rosdep, python3-colcon-common-extensions가 
+설치되어 있어야 합니다.
+워크스페이스 경로나 패키지 이름을 바꾸고 싶으면 Pi에서:
+WS_DIR=~/my_ws PKG_NAME=car_brain bash ~/ros2_jazzy_setup_workspace.sh
+
+
+
+
