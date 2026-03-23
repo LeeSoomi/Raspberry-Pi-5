@@ -111,9 +111,9 @@ ros2 topic echo /scan
 =====================
 
 영구 권한 설정 (한 번만)
-bashsudo usermod -aG dialout $USER
+sudo usermod -aG dialout $USER
 그 다음 재부팅 한 번:
-bashsudo reboot
+sudo reboot
 
 재부팅 후 확인
 bashgroups
