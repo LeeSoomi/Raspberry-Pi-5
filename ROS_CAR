@@ -110,55 +110,25 @@ ros2 topic echo /scan
 
 =====================
 0. 라이다 실행 창을 새로 하나 열어
-아래처럼 다시 실행
+터미널 1 — 라이다 드라이버 실행 (계속 켜둬야 함)
 source /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
 ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
->> 중요한 건 이 창을 닫지 않는다.
 
-1. 새 터미널 창 하나를 열고 아래를 입력(라이다 실행 창)
-source /opt/ros/jazzy/setup.bash
+터미널 2 — 데이터 확인 (확인 후 Ctrl+C 가능)
+bashsource /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
-ros2 topic list
-> 여기서 /scan 이 보이면 아주 정상
-
-2. /scan 이 보이면 바로 이어서 아래를 입력(확인용 창)
 ros2 topic echo /scan
->> 숫자들이 계속 나오면 라이다 데이터가 실제로 들어오고 있는 상태
 
-3. 그다음 시각화 확인은 이렇게
-  RViz 창 시각화 전용
-source /opt/ros/jazzy/setup.bash
+터미널 3 — RVIZ2 시각화 (계속 켜둬야 함)
+bashsource /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
 rviz2
->> RViz가 열리면
-Fixed Frame을 laser 또는 base_scan 또는 현재 라이다 프레임 이름으로 맞춰야 하는데, 
-정확한 프레임은 먼저 아래로 확인
-ros2 topic echo /scan --once
->> 여기서 header 안의 frame_id 값을 보면 됌
 
-4. RViz 안에서는 Add를 눌러서 LaserScan 추가
-Topic을 /scan 으로 설정
-Fixed Frame은 방금 확인한 frame_id와 같게 설정
-
-
------------------
-rviz
-
-먼저 새 터미널 하나를 열고 아래를 실행해.
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map laser
->> 이 창은 닫으면 안 됌
-
-그다음 또 다른 새 터미널에서 아래로 정말 들어왔는지 확인
-source /opt/ros/jazzy/setup.bash
-ros2 topic list
-
->> 여기서 /tf_static 이 보여야 해.
-
-한 번 더 확인하려면
-ros2 topic echo /tf_static --once
-이렇게 했을 때 map 과 laser 관련 내용이 나오면 정상이고, 
-그 상태에서 RViz의 Fixed Frame 을 map 으로 두면
-
+RVIZ2 실행 후 내부 설정:
+```
+Fixed Frame     →  laser
+LaserScan 추가  →  Topic: /scan
+Reliability     →  Best Effort
+Size (m)        →  0.05
 
