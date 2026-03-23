@@ -109,6 +109,17 @@ ros2 topic echo /scan
 .. 여기까지가  장치와 드라이버가 서로 통신하고 있다는 뜻
 
 =====================
+
+영구 권한 설정 (한 번만)
+bashsudo usermod -aG dialout $USER
+그 다음 재부팅 한 번:
+bashsudo reboot
+
+재부팅 후 확인
+bashgroups
+# dialout 이 목록에 보이면 완료
+=============================
+
 0. 라이다 실행 창을 새로 하나 열어
 터미널 1 — 라이다 드라이버 실행 (계속 켜둬야 함)
 source /opt/ros/jazzy/setup.bash
@@ -132,3 +143,31 @@ LaserScan 추가  →  Topic: /scan
 Reliability     →  Best Effort
 Size (m)        →  0.05
 
+================
+SLAM  : 
+slam_toolbox 설치
+
+터미널에서:
+sudo apt install ros-jazzy-slam-toolbox
+
+
+설치 확인:
+ros2 pkg list | grep slam
+# slam_toolbox 보이면 OK
+
+설치 완료되면 실행 순서
+터미널 1 — 라이다 (기존과 동일)
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+
+
+터미널 2 — slam_toolbox 실행
+bashsource /opt/ros/jazzy/setup.bash
+ros2 launch slam_toolbox online_async_launch.py \
+  slam_params_file:=/opt/ros/jazzy/share/slam_toolbox/config/mapper_params_online_async.yaml \
+  use_sim_time:=false
+
+터미널 3 — RVIZ2
+source /opt/ros/jazzy/setup.bash
+rviz2
