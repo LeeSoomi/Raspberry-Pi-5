@@ -49,3 +49,52 @@ ls -l /dev/ttyUSB0
 
 3. 그다음 USB 장치 이름까지 보면 더 확실해.
 lsusb
+
+===================
+1. 먼저 작업공간을 만들고 드라이버를 가져오기
+mkdir -p ~/lidar_ws/src
+cd ~/lidar_ws/src
+git clone https://github.com/Slamtec/sllidar_ros2.git
+
+2. 빌드에 필요한 도구가 없으면 먼저 설치
+sudo apt update
+sudo apt install -y python3-colcon-common-extensions python3-rosdep
+
+rosdep을 아직 초기화하지 않았다면 한 번만 하기
+sudo rosdep init
+rosdep update
+
+3. 작업공간 루트로 가서 의존성 설치 후 빌드.
+cd ~/lidar_ws
+source /opt/ros/jazzy/setup.bash
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install
+
+4. 빌드가 끝나면 환경을 적용
+source ~/lidar_ws/install/setup.bash
+
+매번 자동으로 잡히게 하려면 아래도 추가
+echo "source ~/lidar_ws/install/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+5. 이제 가장 자주 막히는 권한부터 먼저 풀자.
+우선 테스트용으로
+sudo chmod 777 /dev/ttyUSB0
+
+아래로 설치된 launch 파일을 확인하는 게 안전
+ls ~/lidar_ws/src/sllidar_ros2/launch
+
+6. 그다음 라이다 노드를 실행
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+
+7. 새 터미널을 열고 토픽이 뜨는지 확인해.
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 topic list
+> 여기서 /scan이 보이면 드라이버까지 정상
+
+8. 마지막으로 실제 데이터가 들어오는지 보자.
+ros2 topic echo /scan
+숫자 배열이 계속 흘러오면 성공
