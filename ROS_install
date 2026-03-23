@@ -65,13 +65,20 @@ sudo apt install -y ros-jazzy-ros-base
 echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 
-8단계 설치 확인
+데모 패키지 설치
+sudo apt install -y ros-jazzy-demo-nodes-cpp
+또는 Python 버전도 같이
+sudo apt install -y ros-jazzy-demo-nodes-py
 
-터미널 1
+환경 다시 적용 (이거 꼭)
+source ~/.bashrc
+
+8단계 설치 확인
+다시 실행
 ros2 run demo_nodes_cpp talker
 
-터미널 2
-source /opt/ros/jazzy/setup.bash
+다른 터미널 하나 더 열어서
 ros2 run demo_nodes_cpp listener
+
 >> listener 쪽에 메시지 계속 나오면 성공
 
