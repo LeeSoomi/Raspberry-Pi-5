@@ -32,58 +32,46 @@ Suites: noble noble-updates noble-backports
   그 다음 업데이트합니다.
 sudo apt update
 
-3. locale을 맞춥니다.
-  공식 설치 문서는 UTF-8 locale을 권장합니다. 
-  대부분 바로 되어 있지만, 안전하게 한 번 맞추는 편이 좋습니다
+3단계 locale 설정
 sudo apt install -y locales
 sudo locale-gen en_US en_US.UTF-8
 sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 export LANG=en_US.UTF-8
 locale
-  
-  마지막 locale 명령에서 UTF-8 관련 값이 보이면 됩니다.
+>> 출력에 en_US.UTF-8 보이면 정상
 
-4. Universe 저장소를 켭니다.
-ROS 2 공식 문서는 Ubuntu Universe 저장소 활성화를 먼저 하라고 안내합니다.
-
+4단계 Universe 저장소 활성화
 sudo apt install -y software-properties-common
 sudo add-apt-repository universe
 sudo apt update
-  여기서 주의할 점은 예전에 적어준 내용에 sudo add-apt-repository universes라고 되어 있었는데, 
-  그건 오타예요.
-  정확한 명령은 universe입니다. 공식 문서도 그렇게 되어 있습니다.
+> 이미 활성화되어 있어도 다시 실행해도 문제 없음
 
-5. ROS 2 저장소 설정 패키지를 설치합니다.
-
-  요즘 공식 문서는 예전처럼 키를 수동으로 넣는 방식보다 
-  ros2-apt-source 패키지로 저장소와 키를 설정하는 방법을 안내합니다. 
-  이 방식이 나중에 저장소 설정 업데이트도 자동으로 반영돼서 더 깔끔합니다.
-  아래를 순서대로 입력하세요.
-
+5단계 ROS2 저장소 설정 (중요)
 sudo apt install -y curl
+
 export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F'"' '{print $4}')
-curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb"
+
+curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME})_all.deb"
+
 sudo dpkg -i /tmp/ros2-apt-source.deb
 sudo apt update
 
-6. ROS 2 Jazzy를 설치합니다.
-  라즈베리파이에서는 desktop보다 ros-base가 더 가볍고 현실적입니다. 
-  desktop은 RViz 같은 GUI 도구까지 포함해서 부담이 더 큽니다. 
-  ROS 설치 문서도 패키지 방식 설치를 기본으로 안내하고 있고, 
-  현재 Jazzy deb 패키지는 Ubuntu 24.04 Noble에서 제공됩니다.
-
+6단계 ROS2 설치 (라즈베리파이 권장)
 sudo apt install -y ros-jazzy-ros-base
+  ros-base는 핵심 기능만 포함
+  desktop은 무거워서 라즈베리파이에서는 비추천
 
-7. 환경 설정을 등록합니다.
-매번 source를 다시 치지 않게 .bashrc에 등록합니다. 
-ROS 설치 문서에도 설치 후 환경 설정 단계를 안내합니다.
+7단계 환경 설정 (이거 안 하면 실행 안 됨)
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+source ~/.bashrc
 
-8. 설치 확인을 합니다.
-  터미널 1에서
+8단계 설치 확인
+
+터미널 1
 ros2 run demo_nodes_cpp talker
-  새 터미널을 하나 더 열고, 터미널 2에서:
+
+터미널 2
 source /opt/ros/jazzy/setup.bash
 ros2 run demo_nodes_cpp listener
-  listener 쪽에 메시지가 계속 들어오면 설치 성공입니다. 
-  ROS 공식 문서도 예제 노드 실행으로 동작 확인을 안내
+>> listener 쪽에 메시지 계속 나오면 성공
 
