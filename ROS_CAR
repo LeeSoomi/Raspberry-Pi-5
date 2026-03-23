@@ -105,3 +105,33 @@ ros2 topic list
 8. 마지막으로 실제 데이터가 들어오는지 보자.
 ros2 topic echo /scan
 숫자 배열이 계속 흘러오면 성공
+
+.. 여기까지가  장치와 드라이버가 서로 통신하고 있다는 뜻
+
+=====================
+
+1. 새 터미널 창 하나를 열고 아래를 입력
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 topic list
+> 여기서 /scan 이 보이면 아주 정상
+
+2. /scan 이 보이면 바로 이어서 아래를 입력
+ros2 topic echo /scan
+>> 숫자들이 계속 나오면 라이다 데이터가 실제로 들어오고 있는 상태
+
+3. 그다음 시각화 확인은 이렇게
+rviz2
+>> RViz가 열리면
+Fixed Frame을 laser 또는 base_scan 또는 현재 라이다 프레임 이름으로 맞춰야 하는데, 
+정확한 프레임은 먼저 아래로 확인
+ros2 topic echo /scan --once
+>> 여기서 header 안의 frame_id 값을 보면 됌
+
+4. RViz 안에서는 Add를 눌러서 LaserScan 추가
+Topic을 /scan 으로 설정
+Fixed Frame은 방금 확인한 frame_id와 같게 설정
+
+
+
+
