@@ -170,8 +170,7 @@ ros2 launch slam_toolbox online_async_launch.py \
 
 터미널 3 — 
 source /opt/ros/jazzy/setup.bash
-ros2 launch slam_toolbox online_async_launch.py \
-  use_sim_time:=false
+rviz2
 >>
   ### 실행 후 RVIZ에서 추가 설정
   
