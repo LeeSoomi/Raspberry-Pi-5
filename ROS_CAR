@@ -65,6 +65,13 @@ sudo rosdep init
 rosdep update
 
 3. 작업공간 루트로 가서 의존성 설치 후 빌드.
+
+sudo apt update
+sudo apt install -y build-essential
+
+g++ --version
+>> 버전이 나오면 정상이
+
 cd ~/lidar_ws
 source /opt/ros/jazzy/setup.bash
 rosdep install --from-paths src --ignore-src -r -y
