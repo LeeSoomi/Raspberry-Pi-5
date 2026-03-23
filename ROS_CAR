@@ -116,17 +116,20 @@ source ~/lidar_ws/install/setup.bash
 ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
 >> 중요한 건 이 창을 닫지 않는다.
 
-1. 새 터미널 창 하나를 열고 아래를 입력
+1. 새 터미널 창 하나를 열고 아래를 입력(라이다 실행 창)
 source /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
 ros2 topic list
 > 여기서 /scan 이 보이면 아주 정상
 
-2. /scan 이 보이면 바로 이어서 아래를 입력
+2. /scan 이 보이면 바로 이어서 아래를 입력(확인용 창)
 ros2 topic echo /scan
 >> 숫자들이 계속 나오면 라이다 데이터가 실제로 들어오고 있는 상태
 
 3. 그다음 시각화 확인은 이렇게
+  RViz 창 시각화 전용
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
 rviz2
 >> RViz가 열리면
 Fixed Frame을 laser 또는 base_scan 또는 현재 라이다 프레임 이름으로 맞춰야 하는데, 
