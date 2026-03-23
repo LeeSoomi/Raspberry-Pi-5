@@ -109,6 +109,12 @@ ros2 topic echo /scan
 .. 여기까지가  장치와 드라이버가 서로 통신하고 있다는 뜻
 
 =====================
+0. 라이다 실행 창을 새로 하나 열어
+아래처럼 다시 실행
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+>> 중요한 건 이 창을 닫지 않는다.
 
 1. 새 터미널 창 하나를 열고 아래를 입력
 source /opt/ros/jazzy/setup.bash
