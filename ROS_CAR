@@ -168,6 +168,15 @@ ros2 launch slam_toolbox online_async_launch.py \
   slam_params_file:=/opt/ros/jazzy/share/slam_toolbox/config/mapper_params_online_async.yaml \
   use_sim_time:=false
 
-터미널 3 — RVIZ2
+터미널 3 — 
 source /opt/ros/jazzy/setup.bash
-rviz2
+ros2 launch slam_toolbox online_async_launch.py \
+  use_sim_time:=false
+>>
+  ### 실행 후 RVIZ에서 추가 설정
+  
+  slam_toolbox가 켜지면 RVIZ에 **Map 추가**해야 해요:
+  ```
+  Add → By display type → Map → OK
+  Topic → /map 입력
+  Fixed Frame → map 으로 변경
