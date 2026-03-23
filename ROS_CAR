@@ -116,7 +116,7 @@ sudo usermod -aG dialout $USER
 sudo reboot
 
 재부팅 후 확인
-bashgroups
+groups
 # dialout 이 목록에 보이면 완료
 =============================
 
@@ -127,12 +127,12 @@ source ~/lidar_ws/install/setup.bash
 ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
 
 터미널 2 — 데이터 확인 (확인 후 Ctrl+C 가능)
-bashsource /opt/ros/jazzy/setup.bash
+source /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
 ros2 topic echo /scan
 
 터미널 3 — RVIZ2 시각화 (계속 켜둬야 함)
-bashsource /opt/ros/jazzy/setup.bash
+source /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
 rviz2
 
@@ -163,7 +163,7 @@ ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
 
 
 터미널 2 — slam_toolbox 실행
-bashsource /opt/ros/jazzy/setup.bash
+source /opt/ros/jazzy/setup.bash
 ros2 launch slam_toolbox online_async_launch.py \
   slam_params_file:=/opt/ros/jazzy/share/slam_toolbox/config/mapper_params_online_async.yaml \
   use_sim_time:=false
