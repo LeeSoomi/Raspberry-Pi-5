@@ -142,5 +142,23 @@ Topic을 /scan 으로 설정
 Fixed Frame은 방금 확인한 frame_id와 같게 설정
 
 
+-----------------
+rviz
+
+먼저 새 터미널 하나를 열고 아래를 실행해.
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map laser
+>> 이 창은 닫으면 안 됌
+
+그다음 또 다른 새 터미널에서 아래로 정말 들어왔는지 확인
+source /opt/ros/jazzy/setup.bash
+ros2 topic list
+
+>> 여기서 /tf_static 이 보여야 해.
+
+한 번 더 확인하려면
+ros2 topic echo /tf_static --once
+이렇게 했을 때 map 과 laser 관련 내용이 나오면 정상이고, 
+그 상태에서 RViz의 Fixed Frame 을 map 으로 두면
 
 
