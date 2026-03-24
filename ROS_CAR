@@ -166,7 +166,8 @@ ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
 source /opt/ros/jazzy/setup.bash
 ros2 launch slam_toolbox online_async_launch.py \
   use_sim_time:=false \
-  base_frame:=laser
+  base_frame:=laser \
+  odom_frame:=laser
 
 
 터미널 3 — RVIZ2 (계속 켜둬야 함)
@@ -174,22 +175,14 @@ source /opt/ros/jazzy/setup.bash
 rviz2
 ```
 
-RVIZ2 실행 후 설정:
+RVIZ2 재실행 후 설정 다시:
 ```
-Fixed Frame        →  map
-Map 추가           →  Topic: /map
-                      Reliability: Best Effort
-LaserScan 추가     →  Topic: /scan
-                      Reliability: Best Effort
-                      Size(m): 0.05
->>
-  ### 실행 후 RVIZ에서 추가 설정
-  
-  slam_toolbox가 켜지면 RVIZ에 **Map 추가**해야 해요:
-  ```
-  Add → By display type → Map → OK
-  Topic → /map 입력
-  Fixed Frame → map 으로 변경
+Fixed Frame     →  map
+Map 추가        →  Topic: /map
+                   Reliability: Best Effort
+LaserScan 추가  →  Topic: /scan
+                   Reliability: Best Effort
+                   Size(m): 0.05
 
 
 해결 — static_transform 추가
