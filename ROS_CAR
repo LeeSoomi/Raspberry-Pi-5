@@ -156,42 +156,27 @@ ros2 pkg list | grep slam
 # slam_toolbox 보이면 OK
 
 설치 완료되면 실행 순서
-터미널 1 — 라이다 (기존과 동일)
+
+
+터미널 1에서 실행
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map base_link
+
+터미널 2에서 실행
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 base_link laser
+
+라이다 실행
+터미널 3
 source /opt/ros/jazzy/setup.bash
 source ~/lidar_ws/install/setup.bash
-ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+ros2 launch slidar_ros2 slidar_a1_launch.py serial_port:=/dev/ttyUSB0
 
-
-터미널 2 —  slam_toolbox (계속 켜둬야 함)
+SLAM 실행 (여기가 핵심)
+터미널 4
 source /opt/ros/jazzy/setup.bash
-ros2 launch slam_toolbox online_async_launch.py \
-  use_sim_time:=false \
-  base_frame:=laser \
-  odom_frame:=laser
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
 
-
-터미널 3 — RVIZ2 (계속 켜둬야 함)
-source /opt/ros/jazzy/setup.bash
+RViz 실행
+터미널 5
 rviz2
-```
-
-RVIZ2 재실행 후 설정 다시:
-```
-Fixed Frame     →  map
-Map 추가        →  Topic: /map
-                   Reliability: Best Effort
-LaserScan 추가  →  Topic: /scan
-                   Reliability: Best Effort
-                   Size(m): 0.05
-
-
-해결 — static_transform 추가
-터미널 4를 새로 열어서:
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher \
-  0 0 0 0 0 0 map odom
-
-터미널 5 하나 더:
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher \
-  0 0 0 0 0 0 odom laser
