@@ -120,305 +120,32 @@ groups
 # dialout 이 목록에 보이면 완료
 =============================
 
-0. 라이다 실행 창을 새로 하나 열어
-터미널 1 — 라이다 드라이버 실행 (계속 켜둬야 함)
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
-
-터미널 2 — 데이터 확인 (확인 후 Ctrl+C 가능)
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 topic echo /scan
-
-터미널 3 — RVIZ2 시각화 (계속 켜둬야 함)
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-rviz2
-
-RVIZ2 실행 후 내부 설정:
-```
-Fixed Frame     →  laser
-LaserScan 추가  →  Topic: /scan
-Reliability     →  Best Effort
-Size (m)        →  0.05
-
-================
-SLAM  : 
-slam_toolbox 설치
-
-터미널에서:
-sudo apt install ros-jazzy-slam-toolbox
+[실행]
+터미널 1: 라이다
+터미널 2: odom → base_footprint
+터미널 3: base_footprint → laser
+터미널 4: slam_toolbox
+터미널 5: rviz2
 
 
-설치 확인:
-ros2 pkg list | grep slam
-# slam_toolbox 보이면 OK
-
-설치 완료되면 실행 순서
-
-
-터미널 1에서 실행
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
->>여기서 health status OK  scan frequency 출력됨
-
-터미널 2에서 실행
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 topic echo /scan --once
->> 값이 나오면 라이다 정상
-
-
-라이다 실행 
-터미널 3 (TF 연결, 계속 켜둠)
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_link --child-frame-id laser
-
-터미널 4를 새로 열고 RViz를 실행해.
-터미널 4
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-rviz2
-
-RViz 설정
-  Fixed Frame = base_link
-  Add → LaserScan
-  Topic = /scan
-  Reliability = Best Effort
-  Size (m) = 0.05
-
-
-
-터미널 5
-source /opt/ros/jazzy/setup.bash
-ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
-
-RViz에서 추가 설정
-  Fixed Frame → map 으로 변경
-  Add → Map 추가
-  LaserScan은 그대로 유지
------------
-
-그리고 RViz는 새로 한 번 다시 열거나, 기존 RViz에서 다음처럼 바꿔.
-
-Fixed Frame을 map으로 변경
-Add에서 Map display 추가
-LaserScan은 그대로 /scan 유지
-
-==============
-이 상태에서 SLAM만 다시 붙이면 된다
-
-다음 순서로 진행해
-
-지금 RViz는 그대로 둬 (중요)
-새 터미널 열기
-source /opt/ros/jazzy/setup.bash
-ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
-RViz에서 변경
-Fixed Frame → map
-
-그리고
-
-Add → Map 추가
-
-그러면 변화가 이렇게 생긴다
-
-처음에는 그냥 점만 보이다가
-조금 움직이면
-
-→ 지도(회색/흰색)가 점점 생기기 시작함
-
-만약 여기서 또 queue is full 나오면
-그건 정상 범위일 수도 있고
-아니면 TF 하나만 추가로 필요할 수도 있다
-
-
-새 터미널에서
+1. 라이다 먼저 실행 터미널1
+가장 먼저 센서가 살아 있어야 함
 
 source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_link
+(라이다 실행 명령)
 
-이거 하나 추가
-
-그리고 RViz도 조금 수정
-
-Fixed Frame → map   (이미 했으면 OK)
-
-========================
-
-터미널 전부 닫고 새로 시작
-
-터미널 1 (라이다)
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
-
-터미널 2 (odom → base_link)
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_link
-
-터미널 3 (base_link → laser)
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_link --child-frame-id laser
-
-여기까지 하고 한 번 체크
-
-ros2 topic echo /scan --once
-값 나오면 라이다 OK
-
-터미널 4 (SLAM 실행, yaml 사용)
-source /opt/ros/jazzy/setup.bash
-ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/home/cos/slam_params.yaml use_sim_time:=false
-
-여기서 “Failed to compute odom pose” 안 뜨는지 확인
-
-터미널 5 (TF 확인)
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros tf2_echo map odom
-
-이게 나오면 거의 성공
-
-마지막 RViz
-rviz2
-
-처음에는
-Fixed Frame → odom
-LaserScan → /scan 확인
-
-그 다음에
-Fixed Frame → map 변경
-Map 추가 (/map)
-
-중요 포인트 하나만 기억하면 된다
-
-라이다 → TF → SLAM → RViz
-이 순서가 하나라도 안 맞으면 맵이 안 나온다
-
----------
-지금은 새 터미널 하나만 열어서 아래 네 줄부터 확인해줘.
-
-source /opt/ros/jazzy/setup.bash
-ros2 param get /slam_toolbox base_frame
-ros2 param get /slam_toolbox odom_frame
-ros2 param get /slam_toolbox map_frame
-ros2 param get /slam_toolbox scan_topic
-
-정상이라면 보통 이렇게 나와야 해.
-
-base_frame = base_link
-odom_frame = odom
-map_frame = map
-scan_topic = /scan
-
-여기서 하나라도 다르면 그게 원인이야.
-
-그리고 바로 이어서 이것도 확인해줘.
-
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros tf2_echo odom base_link
-
-이 명령에서 값이 계속 나오면 odom -> base_link는 정상이고, 안 나오면 2번 static transform이 실제로 안 먹은 거야.
-
-그다음 이것도 확인해줘.
-
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros tf2_echo base_link laser
-
-이것도 값이 계속 나와야 정상이다.
-
-지금 단계에서는 이렇게 보면 돼.
-
-ros2 param get /slam_toolbox ...에서 프레임 이름 확인
-tf2_echo odom base_link 확인
-tf2_echo base_link laser 확인
-
-내 추측으로는 slam_toolbox가 아직 base_footprint를 보고 있거나, 
-아까 만든 slam_params.yaml이 실제로 적용되지 않은 가능성이 커. 
-그래서 먼저 파라미터 값부터 확인해야 해.
-
-
-
-------------
-터미널 1
-라이다 실행 창이야. 이 창은 끝까지 닫지 마.
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
-
-정상이라면 아래 비슷한 문구가 보여.
-health status : OK
-
-터미널 2
-odom -> base_footprint 변환 창이야. 이것도 계속 켜 둬.
+2. TF 실행 (두 개)  터미널2 
 source /opt/ros/jazzy/setup.bash
 ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_footprint
 
-
 터미널 3
-base_footprint -> laser 변환 창이야. 이것도 계속 켜 둬.
+
 source /opt/ros/jazzy/setup.bash
 ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_footprint --child-frame-id laser
 
-터미널 4
-SLAM 실행 창이야.
+3. SLAM 실행  터미널4
 source /opt/ros/jazzy/setup.bash
 ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
-여기서 아까처럼
-Failed to compute odom pose
-가 계속 뜨는지 먼저 확인해.
 
-터미널 5
-확인용 창이야. 먼저 /scan이 살아 있는지 확인.
-source /opt/ros/jazzy/setup.bash
-ros2 topic echo /scan --once
-값이 한 번 나오면 라이다 정상.
-
-같은 터미널 5에서 TF 확인
-먼저 이걸 입력해.
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros tf2_echo odom base_footprint
-값이 계속 나오면 2번 터미널 정상.
-
-그다음 새 터미널 6을 열어서 이것도 확인해.
-
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros tf2_echo base_footprint laser
-값이 계속 나오면 3번 터미널 정상.
-
-터미널 7
-RViz 실행 창이야.
-source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
+4. RViz 마지막 터미널5
 rviz2
-
-RViz에서는 이렇게 맞춰.
-
-처음에는 Fixed Frame = base_footprint
-LaserScan 추가
-Topic = /scan
-Reliability Policy = Best Effort
-Durability Policy = Volatile
-
-여기서 빨간 점이 보이면 라이다까지는 성공
-그다음 SLAM 확인
-RViz에서 이제 Fixed Frame = map 으로 바꾸고
-Map display를 추가한 뒤 아래처럼 맞춰.
-
-Topic = /map
-Update Topic = /map_updates
-
-마지막 확인
-새 터미널에서 아래 입력.
-source /opt/ros/jazzy/setup.bash
-ros2 topic list | grep map
-
-/map 과 /map_updates가 보여야 해.
-
-그다음
-
-source /opt/ros/jazzy/setup.bash
-ros2 topic echo /map --once
-
-여기서 실제 내용이 출력되면 맵이 생성되는 상태
