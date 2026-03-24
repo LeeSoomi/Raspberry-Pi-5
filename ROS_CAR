@@ -190,3 +190,15 @@ LaserScan 추가     →  Topic: /scan
   Add → By display type → Map → OK
   Topic → /map 입력
   Fixed Frame → map 으로 변경
+
+
+해결 — static_transform 추가
+터미널 4를 새로 열어서:
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher \
+  0 0 0 0 0 0 map odom
+
+터미널 5 하나 더:
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher \
+  0 0 0 0 0 0 odom laser
