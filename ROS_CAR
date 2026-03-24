@@ -275,12 +275,3 @@ source /opt/ros/jazzy/setup.bash
 ros2 topic list | grep map
 ros2 topic echo /map --once
 >>>여기서 /map이 보이면 RViz에서도 지도 표시가 살아남
-
-
-
-그리고 Map display는 그대로 유지
-
-그 다음
-
-SLAM 터미널은 끄고 다시 실행
-ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
