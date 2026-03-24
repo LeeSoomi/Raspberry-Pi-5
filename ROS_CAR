@@ -337,3 +337,88 @@ tf2_echo base_link laser 확인
 내 추측으로는 slam_toolbox가 아직 base_footprint를 보고 있거나, 
 아까 만든 slam_params.yaml이 실제로 적용되지 않은 가능성이 커. 
 그래서 먼저 파라미터 값부터 확인해야 해.
+
+
+
+------------
+터미널 1
+라이다 실행 창이야. 이 창은 끝까지 닫지 마.
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+
+정상이라면 아래 비슷한 문구가 보여.
+health status : OK
+
+터미널 2
+odom -> base_footprint 변환 창이야. 이것도 계속 켜 둬.
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_footprint
+
+
+터미널 3
+base_footprint -> laser 변환 창이야. 이것도 계속 켜 둬.
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_footprint --child-frame-id laser
+
+터미널 4
+SLAM 실행 창이야.
+source /opt/ros/jazzy/setup.bash
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
+여기서 아까처럼
+Failed to compute odom pose
+가 계속 뜨는지 먼저 확인해.
+
+터미널 5
+확인용 창이야. 먼저 /scan이 살아 있는지 확인.
+source /opt/ros/jazzy/setup.bash
+ros2 topic echo /scan --once
+값이 한 번 나오면 라이다 정상.
+
+같은 터미널 5에서 TF 확인
+먼저 이걸 입력해.
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo odom base_footprint
+값이 계속 나오면 2번 터미널 정상.
+
+그다음 새 터미널 6을 열어서 이것도 확인해.
+
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo base_footprint laser
+값이 계속 나오면 3번 터미널 정상.
+
+터미널 7
+RViz 실행 창이야.
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+rviz2
+
+RViz에서는 이렇게 맞춰.
+
+처음에는 Fixed Frame = base_footprint
+LaserScan 추가
+Topic = /scan
+Reliability Policy = Best Effort
+Durability Policy = Volatile
+
+여기서 빨간 점이 보이면 라이다까지는 성공
+그다음 SLAM 확인
+RViz에서 이제 Fixed Frame = map 으로 바꾸고
+Map display를 추가한 뒤 아래처럼 맞춰.
+
+Topic = /map
+Update Topic = /map_updates
+
+마지막 확인
+새 터미널에서 아래 입력.
+source /opt/ros/jazzy/setup.bash
+ros2 topic list | grep map
+
+/map 과 /map_updates가 보여야 해.
+
+그다음
+
+source /opt/ros/jazzy/setup.bash
+ros2 topic echo /map --once
+
+여기서 실제 내용이 출력되면 맵이 생성되는 상태
