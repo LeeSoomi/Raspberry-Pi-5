@@ -139,13 +139,31 @@ source /opt/ros/jazzy/setup.bash
 ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_footprint
 
 터미널 3
-
 source /opt/ros/jazzy/setup.bash
 ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_footprint --child-frame-id laser
+
 
 3. SLAM 실행  터미널4
 source /opt/ros/jazzy/setup.bash
 ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
 
+
+새창
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo odom base_footprint
+
+
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo map odom
+
+
 4. RViz 마지막 터미널5
 rviz2
+
+
+RViz는 이렇게 두면 돼.
+
+Fixed Frame = map
+LaserScan Topic = /scan
+Map Topic = /map
+Update Topic = /map_updates
