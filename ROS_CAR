@@ -234,8 +234,21 @@ Add → Map 추가
 그건 정상 범위일 수도 있고
 아니면 TF 하나만 추가로 필요할 수도 있다
 
-근데 지금 상태면 80% 이상은 바로 지도 나올 가능성이 높다
 
-지금은 중요한 단계 하나 넘었다
+새 터미널에서
 
-라이다 시각화 성공 → 이제 SLAM 단계 진입 가능
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_link
+
+이거 하나 추가
+
+그리고 RViz도 조금 수정
+
+Fixed Frame → map   (이미 했으면 OK)
+
+그리고 Map display는 그대로 유지
+
+그 다음
+
+SLAM 터미널은 끄고 다시 실행
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
