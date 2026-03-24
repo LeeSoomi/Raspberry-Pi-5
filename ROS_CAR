@@ -247,31 +247,51 @@ ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0
 Fixed Frame → map   (이미 했으면 OK)
 
 ========================
-첫 번째 터미널
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_footprint
 
-두 번째 터미널
-source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_footprint --child-frame-id base_link
+터미널 전부 닫고 새로 시작
 
-세 번째 터미널
+터미널 1 (라이다)
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+
+터미널 2 (odom → base_link)
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_link
+
+터미널 3 (base_link → laser)
 source /opt/ros/jazzy/setup.bash
 ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_link --child-frame-id laser
 
+여기까지 하고 한 번 체크
 
-RViz 다시 열고 이렇게 설정해.
-Fixed Frame = map
+ros2 topic echo /scan --once
+값 나오면 라이다 OK
 
-LaserScan은 그대로 /scan
-
-Map 항목에서는
-Topic = /map
-Update Topic = /map_updates
-
-
-마지막 확인은 새 터미널에서 이 두 개만 보면 된다.
+터미널 4 (SLAM 실행, yaml 사용)
 source /opt/ros/jazzy/setup.bash
-ros2 topic list | grep map
-ros2 topic echo /map --once
->>>여기서 /map이 보이면 RViz에서도 지도 표시가 살아남
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/home/cos/slam_params.yaml use_sim_time:=false
+
+여기서 “Failed to compute odom pose” 안 뜨는지 확인
+
+터미널 5 (TF 확인)
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo map odom
+
+이게 나오면 거의 성공
+
+마지막 RViz
+rviz2
+
+처음에는
+Fixed Frame → odom
+LaserScan → /scan 확인
+
+그 다음에
+Fixed Frame → map 변경
+Map 추가 (/map)
+
+중요 포인트 하나만 기억하면 된다
+
+라이다 → TF → SLAM → RViz
+이 순서가 하나라도 안 맞으면 맵이 안 나온다
