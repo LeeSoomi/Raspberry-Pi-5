@@ -295,3 +295,45 @@ Map 추가 (/map)
 
 라이다 → TF → SLAM → RViz
 이 순서가 하나라도 안 맞으면 맵이 안 나온다
+
+---------
+지금은 새 터미널 하나만 열어서 아래 네 줄부터 확인해줘.
+
+source /opt/ros/jazzy/setup.bash
+ros2 param get /slam_toolbox base_frame
+ros2 param get /slam_toolbox odom_frame
+ros2 param get /slam_toolbox map_frame
+ros2 param get /slam_toolbox scan_topic
+
+정상이라면 보통 이렇게 나와야 해.
+
+base_frame = base_link
+odom_frame = odom
+map_frame = map
+scan_topic = /scan
+
+여기서 하나라도 다르면 그게 원인이야.
+
+그리고 바로 이어서 이것도 확인해줘.
+
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo odom base_link
+
+이 명령에서 값이 계속 나오면 odom -> base_link는 정상이고, 안 나오면 2번 static transform이 실제로 안 먹은 거야.
+
+그다음 이것도 확인해줘.
+
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros tf2_echo base_link laser
+
+이것도 값이 계속 나와야 정상이다.
+
+지금 단계에서는 이렇게 보면 돼.
+
+ros2 param get /slam_toolbox ...에서 프레임 이름 확인
+tf2_echo odom base_link 확인
+tf2_echo base_link laser 확인
+
+내 추측으로는 slam_toolbox가 아직 base_footprint를 보고 있거나, 
+아까 만든 slam_params.yaml이 실제로 적용되지 않은 가능성이 커. 
+그래서 먼저 파라미터 값부터 확인해야 해.
