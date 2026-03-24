@@ -160,23 +160,40 @@ ros2 pkg list | grep slam
 
 터미널 1에서 실행
 source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map base_link
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+>>여기서 health status : OK와 스캔 주파수 로그가 나오면 라이다는 정상이다.
+
 
 터미널 2에서 실행
 source /opt/ros/jazzy/setup.bash
-ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 base_link laser
+source ~/lidar_ws/install/setup.bash
+ros2 topic list
+ros2 topic echo /scan --once
+>> 여기서 /scan이 보여야 하고, frame_id: laser처럼 값이 한 번 출력되면 정상이다.
+
 
 라이다 실행
 터미널 3
 source /opt/ros/jazzy/setup.bash
-source ~/lidar_ws/install/setup.bash
-ros2 launch slidar_ros2 slidar_a1_launch.py serial_port:=/dev/ttyUSB0
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_link --child-frame-id laser
 
-SLAM 실행 (여기가 핵심)
+터미널 4를 새로 열고 RViz를 실행해.
 터미널 4
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+rviz2
+
+
+터미널 5
 source /opt/ros/jazzy/setup.bash
 ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
 
-RViz 실행
-터미널 5
-rviz2
+
+-----------
+
+그리고 RViz는 새로 한 번 다시 열거나, 기존 RViz에서 다음처럼 바꿔.
+
+Fixed Frame을 map으로 변경
+Add에서 Map display 추가
+LaserScan은 그대로 /scan 유지
