@@ -206,3 +206,36 @@ RViz에서 추가 설정
 Fixed Frame을 map으로 변경
 Add에서 Map display 추가
 LaserScan은 그대로 /scan 유지
+
+==============
+이 상태에서 SLAM만 다시 붙이면 된다
+
+다음 순서로 진행해
+
+지금 RViz는 그대로 둬 (중요)
+새 터미널 열기
+source /opt/ros/jazzy/setup.bash
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
+RViz에서 변경
+Fixed Frame → map
+
+그리고
+
+Add → Map 추가
+
+그러면 변화가 이렇게 생긴다
+
+처음에는 그냥 점만 보이다가
+조금 움직이면
+
+→ 지도(회색/흰색)가 점점 생기기 시작함
+
+만약 여기서 또 queue is full 나오면
+그건 정상 범위일 수도 있고
+아니면 TF 하나만 추가로 필요할 수도 있다
+
+근데 지금 상태면 80% 이상은 바로 지도 나올 가능성이 높다
+
+지금은 중요한 단계 하나 넘었다
+
+라이다 시각화 성공 → 이제 SLAM 단계 진입 가능
