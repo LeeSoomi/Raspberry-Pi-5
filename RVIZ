@@ -1,18 +1,14 @@
-GPIO 라이브러리 설치
-sudo apt update
-sudo apt install python3-lgpio
------------------
+    1. 먼저 기존 잘못된 파일은 보관만 하고 새 파일로 테스트
+    터미널에서
 cd ~
-nano motor_test.py
+mv motor_test.py motor_test_old.py
+>>이건 기존 파일을 지우는 게 아니라 이름만 바꾸는 거.
 
--------------------------
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-import RPi.GPIO as GPIO
+    2. GPIO 테스트용 최소 코드부터 만든다
+nano ~/motor_gpio_test.py
+----------  아래 코드 저장
+import lgpio
 import time
-
-t = 0.01
 
 Motor_L1_Pin = 27
 Motor_L2_Pin = 22
@@ -22,132 +18,86 @@ Motor_R2_Pin = 10
 Enable_1 = 17
 Enable_2 = 11
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(Motor_L1_Pin, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(Motor_L2_Pin, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(Motor_R1_Pin, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(Motor_R2_Pin, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(Enable_1, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(Enable_2, GPIO.OUT, initial=GPIO.LOW)
+PWM_FREQ = 1000
 
-pwm_e1 = GPIO.PWM(Enable_1, 100)
-pwm_e2 = GPIO.PWM(Enable_2, 100)
-pwm_e1.start(0)
-pwm_e2.start(0)
+h = lgpio.gpiochip_open(0)
+
+for pin in [Motor_L1_Pin, Motor_L2_Pin, Motor_R1_Pin, Motor_R2_Pin]:
+    lgpio.gpio_claim_output(h, pin)
+
+for pin in [Enable_1, Enable_2]:
+    lgpio.gpio_claim_output(h, pin)
+
+def set_pwm(pin, duty_percent):
+    duty_percent = max(0, min(100, duty_percent))
+    duty = int(duty_percent * 10000)  # lgpio duty: 0~1000000 중 퍼센트 기반
+    lgpio.tx_pwm(h, pin, PWM_FREQ, duty)
 
 def stop():
-    pwm_e1.ChangeDutyCycle(0)
-    pwm_e2.ChangeDutyCycle(0)
-    GPIO.output(Motor_L1_Pin, False)
-    GPIO.output(Motor_L2_Pin, False)
-    GPIO.output(Motor_R1_Pin, False)
-    GPIO.output(Motor_R2_Pin, False)
+    set_pwm(Enable_1, 0)
+    set_pwm(Enable_2, 0)
+    lgpio.gpio_write(h, Motor_L1_Pin, 0)
+    lgpio.gpio_write(h, Motor_L2_Pin, 0)
+    lgpio.gpio_write(h, Motor_R1_Pin, 0)
+    lgpio.gpio_write(h, Motor_R2_Pin, 0)
 
-def forward_f():
-    pwm_e1.ChangeDutyCycle(30)
-    pwm_e2.ChangeDutyCycle(30)
-    GPIO.output(Motor_L1_Pin, True)
-    GPIO.output(Motor_L2_Pin, False)
-    GPIO.output(Motor_R1_Pin, True)
-    GPIO.output(Motor_R2_Pin, False)
+def forward():
+    set_pwm(Enable_1, 30)
+    set_pwm(Enable_2, 30)
+    lgpio.gpio_write(h, Motor_L1_Pin, 1)
+    lgpio.gpio_write(h, Motor_L2_Pin, 0)
+    lgpio.gpio_write(h, Motor_R1_Pin, 1)
+    lgpio.gpio_write(h, Motor_R2_Pin, 0)
 
 def reverse():
-    pwm_e1.ChangeDutyCycle(20)
-    pwm_e2.ChangeDutyCycle(20)
-    GPIO.output(Motor_L1_Pin, False)
-    GPIO.output(Motor_L2_Pin, True)
-    GPIO.output(Motor_R1_Pin, False)
-    GPIO.output(Motor_R2_Pin, True)
+    set_pwm(Enable_1, 20)
+    set_pwm(Enable_2, 20)
+    lgpio.gpio_write(h, Motor_L1_Pin, 0)
+    lgpio.gpio_write(h, Motor_L2_Pin, 1)
+    lgpio.gpio_write(h, Motor_R1_Pin, 0)
+    lgpio.gpio_write(h, Motor_R2_Pin, 1)
 
-def turn_left():
-    pwm_e1.ChangeDutyCycle(20)
-    pwm_e2.ChangeDutyCycle(20)
-    GPIO.output(Motor_L1_Pin, False)
-    GPIO.output(Motor_L2_Pin, True)
-    GPIO.output(Motor_R1_Pin, True)
-    GPIO.output(Motor_R2_Pin, False)
+try:
+    print("3초 전진")
+    forward()
+    time.sleep(3)
 
-def turn_right():
-    pwm_e1.ChangeDutyCycle(20)
-    pwm_e2.ChangeDutyCycle(20)
-    GPIO.output(Motor_L1_Pin, True)
-    GPIO.output(Motor_L2_Pin, False)
-    GPIO.output(Motor_R1_Pin, False)
-    GPIO.output(Motor_R2_Pin, True)
-
-def cleanup():
+    print("1초 정지")
     stop()
-    pwm_e1.stop()
-    pwm_e2.stop()
-    GPIO.cleanup()
+    time.sleep(1)
 
-class MotorCmdVelNode(Node):
-    def __init__(self):
-        super().__init__('motor_cmdvel_node')
-        self.subscription = self.create_subscription(
-            Twist,
-            '/cmd_vel',
-            self.cmd_vel_callback,
-            10
-        )
-        self.get_logger().info('motor_cmdvel_node started')
+    print("3초 후진")
+    reverse()
+    time.sleep(3)
 
-    def cmd_vel_callback(self, msg: Twist):
-        linear = msg.linear.x
-        angular = msg.angular.z
+    print("정지")
+    stop()
 
-        if linear > 0.05:
-            forward_f()
-            self.get_logger().info('forward')
-        elif linear < -0.05:
-            reverse()
-            self.get_logger().info('reverse')
-        elif angular > 0.05:
-            turn_left()
-            self.get_logger().info('turn left')
-        elif angular < -0.05:
-            turn_right()
-            self.get_logger().info('turn right')
-        else:
-            stop()
-            self.get_logger().info('stop')
+except KeyboardInterrupt:
+    stop()
 
-def main(args=None):
-    rclpy.init(args=args)
-    node = MotorCmdVelNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        cleanup()
-        node.destroy_node()
-        rclpy.shutdown()
+finally:
+    stop()
+    lgpio.gpiochip_close(h)
+    ----------
+    저장하고 종료.
+    Ctrl + O
+    엔터
+    Ctrl + X
 
-if __name__ == '__main__':
-    main()
+이 파일은 ROS 없이 먼저 테스트한다
+sudo python3 ~/motor_gpio_test.py
 
-  --------------------
+정상이면 
+3초 전진
+1초 정지
+3초 후진
+이게 되면 GPIO와 모터 배선은 정상이라고 볼 수 있어.
 
-python3 ~/motor_test.py
-권한 문제 나오면
-sudo python3 ~/motor_test.py
+여기서 안 되면 ROS로 넘어가면 안 돼.
+먼저 배선, 모터드라이버, 핀 번호를 다시 봐야 해.
 
-실행
-source /opt/ros/jazzy/setup.bash
-python3 ~/motor_test.py
 
-    다른 터미널에서 teleop 실행
-source /opt/ros/jazzy/setup.bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
-
-키보드 입력
-i 전진
-, 후진
-j 좌회전
-l 우회전
-k 정지
 
 =================================
 ROS2 설치
