@@ -1,19 +1,12 @@
 GPIO 라이브러리 설치
 sudo apt update
-sudo apt install python3-rpi.gpio
+sudo apt install python3-lgpio
 -----------------
 cd ~
 nano motor_test.py
 
 -------------------------
-
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-import RPi.GPIO as GPIO
-
-# 핀 설정 (네가 올린 그림 기준)
-import RPi.GPIO as GPIO
+import lgpio
 import time
 
 # BCM 핀 번호
@@ -24,67 +17,87 @@ IN3 = 22
 IN4 = 27
 ENB = 17
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+# PWM 설정
+PWM_FREQ = 100
+DUTY = 60  # 0~100
 
+# gpiochip 열기
+h = lgpio.gpiochip_open(0)
+
+# 출력 핀 등록
 pins = [ENA, IN1, IN2, IN3, IN4, ENB]
 for pin in pins:
-    GPIO.setup(pin, GPIO.OUT)
+    lgpio.gpio_claim_output(h, pin)
 
-pwm_left = GPIO.PWM(ENA, 100)
-pwm_right = GPIO.PWM(ENB, 100)
+def set_pwm(left_duty: float, right_duty: float) -> None:
+    lgpio.tx_pwm(h, ENA, PWM_FREQ, left_duty)
+    lgpio.tx_pwm(h, ENB, PWM_FREQ, right_duty)
 
-pwm_left.start(0)
-pwm_right.start(0)
+def stop_pwm() -> None:
+    lgpio.tx_pwm(h, ENA, 0, 0)
+    lgpio.tx_pwm(h, ENB, 0, 0)
 
-def stop_all():
-    GPIO.output(IN1, GPIO.LOW)
-    GPIO.output(IN2, GPIO.LOW)
-    GPIO.output(IN3, GPIO.LOW)
-    GPIO.output(IN4, GPIO.LOW)
-    pwm_left.ChangeDutyCycle(0)
-    pwm_right.ChangeDutyCycle(0)
+def stop_all() -> None:
+    lgpio.gpio_write(h, IN1, 0)
+    lgpio.gpio_write(h, IN2, 0)
+    lgpio.gpio_write(h, IN3, 0)
+    lgpio.gpio_write(h, IN4, 0)
+    stop_pwm()
+
+def left_forward(speed: float) -> None:
+    lgpio.gpio_write(h, IN1, 1)
+    lgpio.gpio_write(h, IN2, 0)
+    lgpio.tx_pwm(h, ENA, PWM_FREQ, speed)
+
+def left_backward(speed: float) -> None:
+    lgpio.gpio_write(h, IN1, 0)
+    lgpio.gpio_write(h, IN2, 1)
+    lgpio.tx_pwm(h, ENA, PWM_FREQ, speed)
+
+def right_forward(speed: float) -> None:
+    lgpio.gpio_write(h, IN3, 1)
+    lgpio.gpio_write(h, IN4, 0)
+    lgpio.tx_pwm(h, ENB, PWM_FREQ, speed)
+
+def right_backward(speed: float) -> None:
+    lgpio.gpio_write(h, IN3, 0)
+    lgpio.gpio_write(h, IN4, 1)
+    lgpio.tx_pwm(h, ENB, PWM_FREQ, speed)
+
+def both_forward(speed: float) -> None:
+    lgpio.gpio_write(h, IN1, 1)
+    lgpio.gpio_write(h, IN2, 0)
+    lgpio.gpio_write(h, IN3, 1)
+    lgpio.gpio_write(h, IN4, 0)
+    set_pwm(speed, speed)
 
 try:
     print("1. 왼쪽 모터 정방향 3초")
-    GPIO.output(IN1, GPIO.HIGH)
-    GPIO.output(IN2, GPIO.LOW)
-    pwm_left.ChangeDutyCycle(60)
+    left_forward(DUTY)
     time.sleep(3)
     stop_all()
     time.sleep(1)
 
     print("2. 왼쪽 모터 역방향 3초")
-    GPIO.output(IN1, GPIO.LOW)
-    GPIO.output(IN2, GPIO.HIGH)
-    pwm_left.ChangeDutyCycle(60)
+    left_backward(DUTY)
     time.sleep(3)
     stop_all()
     time.sleep(1)
 
     print("3. 오른쪽 모터 정방향 3초")
-    GPIO.output(IN3, GPIO.HIGH)
-    GPIO.output(IN4, GPIO.LOW)
-    pwm_right.ChangeDutyCycle(60)
+    right_forward(DUTY)
     time.sleep(3)
     stop_all()
     time.sleep(1)
 
     print("4. 오른쪽 모터 역방향 3초")
-    GPIO.output(IN3, GPIO.LOW)
-    GPIO.output(IN4, GPIO.HIGH)
-    pwm_right.ChangeDutyCycle(60)
+    right_backward(DUTY)
     time.sleep(3)
     stop_all()
     time.sleep(1)
 
     print("5. 양쪽 모터 전진 3초")
-    GPIO.output(IN1, GPIO.HIGH)
-    GPIO.output(IN2, GPIO.LOW)
-    GPIO.output(IN3, GPIO.HIGH)
-    GPIO.output(IN4, GPIO.LOW)
-    pwm_left.ChangeDutyCycle(60)
-    pwm_right.ChangeDutyCycle(60)
+    both_forward(DUTY)
     time.sleep(3)
     stop_all()
     time.sleep(1)
@@ -96,12 +109,14 @@ except KeyboardInterrupt:
 
 finally:
     stop_all()
-    pwm_left.stop()
-    pwm_right.stop()
-    GPIO.cleanup()
+    lgpio.gpiochip_close(h)
+
   --------------------
 
 python3 ~/motor_test.py
+권한 문제 나오면
+sudo python3 ~/motor_test.py
+
 왼쪽 바퀴만 한 방향으로 3초
 왼쪽 바퀴만 반대 방향으로 3초
 오른쪽 바퀴만 한 방향으로 3초
