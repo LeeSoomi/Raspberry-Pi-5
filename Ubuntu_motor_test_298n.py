@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
-"""
-L298N 듀얼 모터 테스트 — 라즈베리파이 5 + Ubuntu
-BCM 번호 (이미지 기준):
-  왼쪽: ENB=17, IN4=27, IN3=22
-  오른쪽: ENA=11, IN1=9, IN2=10
-"""
+# Ubuntu(Pi 5) 패키지
+# 터미널에서:
+# sudo apt update
+# sudo apt install -y python3-gpiozero python3-lgpio gpiod
+
+# GPIO 권한 (root 없이 쓰려면)
+# sudo usermod -aG gpio $USER
+
 
 #!/usr/bin/env python3
 """
