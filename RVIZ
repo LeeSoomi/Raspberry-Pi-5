@@ -1,0 +1,58 @@
+ROS2 설치
+slam_toolbox 설치
+패키지 설치 (nav2, teleop 등)
+workspace build
+>> 4가지 이건 다시 안 한다
+
+실행 항때 마다 다시 해야 하는 것
+
+
+  터미널 1
+  환경설정 → 라이다 실행
+
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 launch sllidar_ros2 sllidar_a1_launch.py serial_port:=/dev/ttyUSB0
+  정상이라면 health status : OK 같은 문구가 나온다.
+  이 창은 닫지 않는다.  
+    
+  터미널 2
+  환경설정 → SLAM 실행(odom → base_footprint)
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id odom --child-frame-id base_footprint
+  이 창도 닫지 않는다.
+  
+  터미널 3
+  환경설정 → RViz(base_footprint → laser)
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id base_footprint --child-frame-id laser
+  이 창도 닫지 않는다.  
+
+   터미널4 
+  SLAM 실행
+source /opt/ros/jazzy/setup.bash
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
+  이 창도 닫지 않는다.
+
+  터미널 5
+  RViz 실행
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+rviz2
+
+  RViz 설정
+  Fixed Frame = map
+  LaserScan Topic = /scan
+  Map Topic = /map
+  Update Topic = /map_updates
+
+  터미널 6(확인용)
+  라이다 데이터 확인
+source /opt/ros/jazzy/setup.bash
+source ~/lidar_ws/install/setup.bash
+ros2 topic echo /scan --once
+
+  맵 토픽 확인
+source /opt/ros/jazzy/setup.bash
+ros2 topic list | grep map
+ros2 topic echo /map --once
