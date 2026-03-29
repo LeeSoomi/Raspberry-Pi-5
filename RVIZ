@@ -6,110 +6,127 @@ cd ~
 nano motor_test.py
 
 -------------------------
-import lgpio
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+import RPi.GPIO as GPIO
 import time
 
-# BCM 핀 번호
-ENA = 11
-IN1 = 9
-IN2 = 10
-IN3 = 22
-IN4 = 27
-ENB = 17
+t = 0.01
 
-# PWM 설정
-PWM_FREQ = 100
-DUTY = 60  # 0~100
+Motor_L1_Pin = 27
+Motor_L2_Pin = 22
+Motor_R1_Pin = 9
+Motor_R2_Pin = 10
 
-# gpiochip 열기
-h = lgpio.gpiochip_open(0)
+Enable_1 = 17
+Enable_2 = 11
 
-# 출력 핀 등록
-pins = [ENA, IN1, IN2, IN3, IN4, ENB]
-for pin in pins:
-    lgpio.gpio_claim_output(h, pin)
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(Motor_L1_Pin, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(Motor_L2_Pin, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(Motor_R1_Pin, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(Motor_R2_Pin, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(Enable_1, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(Enable_2, GPIO.OUT, initial=GPIO.LOW)
 
-def set_pwm(left_duty: float, right_duty: float) -> None:
-    lgpio.tx_pwm(h, ENA, PWM_FREQ, left_duty)
-    lgpio.tx_pwm(h, ENB, PWM_FREQ, right_duty)
+pwm_e1 = GPIO.PWM(Enable_1, 100)
+pwm_e2 = GPIO.PWM(Enable_2, 100)
+pwm_e1.start(0)
+pwm_e2.start(0)
 
-def stop_pwm() -> None:
-    lgpio.tx_pwm(h, ENA, 0, 0)
-    lgpio.tx_pwm(h, ENB, 0, 0)
+def stop():
+    pwm_e1.ChangeDutyCycle(0)
+    pwm_e2.ChangeDutyCycle(0)
+    GPIO.output(Motor_L1_Pin, False)
+    GPIO.output(Motor_L2_Pin, False)
+    GPIO.output(Motor_R1_Pin, False)
+    GPIO.output(Motor_R2_Pin, False)
 
-def stop_all() -> None:
-    lgpio.gpio_write(h, IN1, 0)
-    lgpio.gpio_write(h, IN2, 0)
-    lgpio.gpio_write(h, IN3, 0)
-    lgpio.gpio_write(h, IN4, 0)
-    stop_pwm()
+def forward_f():
+    pwm_e1.ChangeDutyCycle(30)
+    pwm_e2.ChangeDutyCycle(30)
+    GPIO.output(Motor_L1_Pin, True)
+    GPIO.output(Motor_L2_Pin, False)
+    GPIO.output(Motor_R1_Pin, True)
+    GPIO.output(Motor_R2_Pin, False)
 
-def left_forward(speed: float) -> None:
-    lgpio.gpio_write(h, IN1, 1)
-    lgpio.gpio_write(h, IN2, 0)
-    lgpio.tx_pwm(h, ENA, PWM_FREQ, speed)
+def reverse():
+    pwm_e1.ChangeDutyCycle(20)
+    pwm_e2.ChangeDutyCycle(20)
+    GPIO.output(Motor_L1_Pin, False)
+    GPIO.output(Motor_L2_Pin, True)
+    GPIO.output(Motor_R1_Pin, False)
+    GPIO.output(Motor_R2_Pin, True)
 
-def left_backward(speed: float) -> None:
-    lgpio.gpio_write(h, IN1, 0)
-    lgpio.gpio_write(h, IN2, 1)
-    lgpio.tx_pwm(h, ENA, PWM_FREQ, speed)
+def turn_left():
+    pwm_e1.ChangeDutyCycle(20)
+    pwm_e2.ChangeDutyCycle(20)
+    GPIO.output(Motor_L1_Pin, False)
+    GPIO.output(Motor_L2_Pin, True)
+    GPIO.output(Motor_R1_Pin, True)
+    GPIO.output(Motor_R2_Pin, False)
 
-def right_forward(speed: float) -> None:
-    lgpio.gpio_write(h, IN3, 1)
-    lgpio.gpio_write(h, IN4, 0)
-    lgpio.tx_pwm(h, ENB, PWM_FREQ, speed)
+def turn_right():
+    pwm_e1.ChangeDutyCycle(20)
+    pwm_e2.ChangeDutyCycle(20)
+    GPIO.output(Motor_L1_Pin, True)
+    GPIO.output(Motor_L2_Pin, False)
+    GPIO.output(Motor_R1_Pin, False)
+    GPIO.output(Motor_R2_Pin, True)
 
-def right_backward(speed: float) -> None:
-    lgpio.gpio_write(h, IN3, 0)
-    lgpio.gpio_write(h, IN4, 1)
-    lgpio.tx_pwm(h, ENB, PWM_FREQ, speed)
+def cleanup():
+    stop()
+    pwm_e1.stop()
+    pwm_e2.stop()
+    GPIO.cleanup()
 
-def both_forward(speed: float) -> None:
-    lgpio.gpio_write(h, IN1, 1)
-    lgpio.gpio_write(h, IN2, 0)
-    lgpio.gpio_write(h, IN3, 1)
-    lgpio.gpio_write(h, IN4, 0)
-    set_pwm(speed, speed)
+class MotorCmdVelNode(Node):
+    def __init__(self):
+        super().__init__('motor_cmdvel_node')
+        self.subscription = self.create_subscription(
+            Twist,
+            '/cmd_vel',
+            self.cmd_vel_callback,
+            10
+        )
+        self.get_logger().info('motor_cmdvel_node started')
 
-try:
-    print("1. 왼쪽 모터 정방향 3초")
-    left_forward(DUTY)
-    time.sleep(3)
-    stop_all()
-    time.sleep(1)
+    def cmd_vel_callback(self, msg: Twist):
+        linear = msg.linear.x
+        angular = msg.angular.z
 
-    print("2. 왼쪽 모터 역방향 3초")
-    left_backward(DUTY)
-    time.sleep(3)
-    stop_all()
-    time.sleep(1)
+        if linear > 0.05:
+            forward_f()
+            self.get_logger().info('forward')
+        elif linear < -0.05:
+            reverse()
+            self.get_logger().info('reverse')
+        elif angular > 0.05:
+            turn_left()
+            self.get_logger().info('turn left')
+        elif angular < -0.05:
+            turn_right()
+            self.get_logger().info('turn right')
+        else:
+            stop()
+            self.get_logger().info('stop')
 
-    print("3. 오른쪽 모터 정방향 3초")
-    right_forward(DUTY)
-    time.sleep(3)
-    stop_all()
-    time.sleep(1)
+def main(args=None):
+    rclpy.init(args=args)
+    node = MotorCmdVelNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        cleanup()
+        node.destroy_node()
+        rclpy.shutdown()
 
-    print("4. 오른쪽 모터 역방향 3초")
-    right_backward(DUTY)
-    time.sleep(3)
-    stop_all()
-    time.sleep(1)
-
-    print("5. 양쪽 모터 전진 3초")
-    both_forward(DUTY)
-    time.sleep(3)
-    stop_all()
-    time.sleep(1)
-
-    print("테스트 종료")
-
-except KeyboardInterrupt:
-    print("중단됨")
-
-finally:
-    stop_all()
-    lgpio.gpiochip_close(h)
+if __name__ == '__main__':
+    main()
 
   --------------------
 
