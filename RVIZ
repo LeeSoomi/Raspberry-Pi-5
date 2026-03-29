@@ -134,14 +134,22 @@ python3 ~/motor_test.py
 권한 문제 나오면
 sudo python3 ~/motor_test.py
 
-왼쪽 바퀴만 한 방향으로 3초
-왼쪽 바퀴만 반대 방향으로 3초
-오른쪽 바퀴만 한 방향으로 3초
-오른쪽 바퀴만 반대 방향으로 3초
-양쪽 바퀴 같이 3초
+실행
+source /opt/ros/jazzy/setup.bash
+python3 ~/motor_test.py
 
+    다른 터미널에서 teleop 실행
+source /opt/ros/jazzy/setup.bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
 
+키보드 입력
+i 전진
+, 후진
+j 좌회전
+l 우회전
+k 정지
 
+=================================
 ROS2 설치
 slam_toolbox 설치
 패키지 설치 (nav2, teleop 등)
