@@ -2,7 +2,7 @@
 
 1단계: Ubuntu 올리기 (PC에서)
 1) PC에 Raspberry Pi Imager 설치
-2)Imager 실행 → OS 선택 → Other general-purpose OS → Ubuntu → Ubuntu Server 24.04 LTS (64-bit)
+2)Imager 실행 → OS 선택 → Other general-purpose OS → Ubuntu → Ubuntu Desktop 24.04 LTS (64-bit)
 3) 저장 장치(SD/USB) 선택 → 톱니바퀴(설정)에서 가능하면 미리 설정
   - SSH Enable (무조건 켜기)
     나중에 모니터 없이도 접속 가능
