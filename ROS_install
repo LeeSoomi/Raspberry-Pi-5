@@ -141,40 +141,73 @@ sudo shutdown now
 =================
 
 
+----- ROS설치 -----------
 
-5단계 ROS2 저장소 설정 (중요)
-sudo apt install -y curl
+------업데이트
+sudo apt update
+
+------ 저장소 설정 전 universe 추가
+sudo apt install -y software-properties-common
+sudo add-apt-repository universe
+sudo apt update
+
+---ROS2 저장소 설정 (중요)
+sudo apt install -y curl gnupg2 lsb-release
 
 export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F'"' '{print $4}')
 
-curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME})_all.deb"
+curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb"
 
 sudo dpkg -i /tmp/ros2-apt-source.deb
 sudo apt update
+sudo apt upgrade -y
 
-6단계 ROS2 설치 (라즈베리파이 권장)
+
+---ROS2 설치 (라즈베리파이 권장)
 sudo apt install -y ros-jazzy-ros-base
+sudo apt install -y python3-colcon-common-extensions
+
   ros-base는 핵심 기능만 포함
   desktop은 무거워서 라즈베리파이에서는 비추천
 
-7단계 환경 설정 (이거 안 하면 실행 안 됨)
+---환경 설정 (이거 안 하면 실행 안 됨)
 echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 
-데모 패키지 설치
-sudo apt install -y ros-jazzy-demo-nodes-cpp
-또는 Python 버전도 같이
-sudo apt install -y ros-jazzy-demo-nodes-py
-
-환경 다시 적용 (이거 꼭)
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+echo "export ROS_DOMAIN_ID=0" >> ~/.bashrc
 source ~/.bashrc
 
-8단계 설치 확인
-다시 실행
+---데모 패키지 설치
+sudo apt install -y ros-jazzy-demo-nodes-cpp
+sudo apt install -y ros-jazzy-demo-nodes-py
+
+---환경 다시 적용 (이거 꼭)
+source ~/.bashrc
+
+--- 설치 확인
+첫번째 터미널 실행
 ros2 run demo_nodes_cpp talker
 
 다른 터미널 하나 더 열어서
+source ~/.bashrc
 ros2 run demo_nodes_cpp listener
 
->> listener 쪽에 메시지 계속 나오면 성공
+그다음 세 번째 터미널에서
+source ~/.bashrc
+ros2 topic list
+>> 여기서는 /chatter가 보이면 정상이고, 보통 /parameter_events, /rosout도 함께 보일 수 있다.
 
+
+ROS 환경 적용 확인
+printenv | grep ROS
+  >?> 여기서
+  ROS_VERSION, ROS_DISTRO 등이 나오면 정상
+
+토픽 확인
+ros2 topic list
+>>>
+  talker 실행 후
+  listener 실행 전에
+  
+  /chatter 같은 토픽이 보여야 정상
