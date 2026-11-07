@@ -29,6 +29,29 @@ rpicam-still -o test.jpg
 rpicam-vid -t 10000 -o test.h264
 
 ===========================================
+OpenCV 설치
+        sudo apt install -y python3-opencv libopencv-dev
+            # python3-opencv: Python용 OpenCV
+            # libopencv-dev: C++ 개발용 라이브러리
+
+        sudo apt install -y python3-pil python3-numpy
+             # Pillow(이미지 처리), NumPy(수치 계산) 설치
+      
+      
+      OpenCV 설치 확인
+      	python3 -c "import cv2; print('OpenCV version:', cv2.__version__)"
+       
+             # 출력 : OpenCV version: 4.6.0
+             # Bookworm의 APT 버전은 4.6.0
+      
+      NumPy 확인
+      	python3 -c "import numpy as np; print('NumPy version:', np.__version__)"
+      
+             # 출력 : NumPy version: 1.24.x
+
+=================================================
+
+OpenCV 카메라 테스트
 
     #  cv2_camera_test.py
 from picamera2 import Picamera2
